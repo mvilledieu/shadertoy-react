@@ -1,15 +1,28 @@
 // @flow
 import React, { Component } from 'react';
+import Texture, {
+  NearestFilter,
+  LinearFilter,
+  NearestMipMapNearestFilter,
+  LinearMipMapNearestFilter,
+  NearestMipMapLinearFilter,
+  LinearMipMapLinearFilter,
+  ClampToEdgeWrapping,
+  MirroredRepeatWrapping,
+  RepeatWrapping,
+} from './Texture';
 
-export const NearestFilter = 9728;
-export const LinearFilter = 9729;
-export const NearestMipMapNearestFilter = 9984;
-export const LinearMipMapNearestFilter = 9985;
-export const NearestMipMapLinearFilter = 9986;
-export const LinearMipMapLinearFilter = 9987;
-export const ClampToEdgeWrapping = 33071;
-export const MirroredRepeatWrapping = 33648;
-export const RepeatWrapping = 10497;
+export {
+  NearestFilter,
+  LinearFilter,
+  NearestMipMapNearestFilter,
+  LinearMipMapNearestFilter,
+  NearestMipMapLinearFilter,
+  LinearMipMapLinearFilter,
+  ClampToEdgeWrapping,
+  MirroredRepeatWrapping,
+  RepeatWrapping,
+};
 
 const FS_PRECISION_PREPROCESSOR = 
 `#ifdef GL_ES
@@ -82,6 +95,12 @@ type TextureType = {
 };
 /* eslint-emable */
 
+type TextureObject = {
+  texture: WebGLTexture,
+  source:HTMLImageElement | HTMLVideoElement,
+  isVideo: boolean,
+};
+
 type Props = {
   fs: string,
   vs?: string,
@@ -110,28 +129,6 @@ const insertStringAtIndex = (
       string +
       currentString.substring(index, currentString.length)
     : string + currentString;
-
-// eslint-disable-next-line
-const isPowerOf2 = (value: number) => (value & (value - 1)) == 0;
-const floorPowerOfTwo = (value: number) =>
-  2 ** Math.floor(Math.log(value) / Math.LN2);
-const textureNeedsGenerateMipmaps = (
-  texture: TextureType,
-  isPowerOfTwo: boolean
-) =>
-  isPowerOfTwo &&
-  texture.minFilter !== NearestFilter &&
-  texture.minFilter !== LinearFilter;
-const textureNeedsPowerOfTwo = (texture: TextureType) => {
-  if (
-    texture.wrapS !== ClampToEdgeWrapping ||
-    texture.wrapT !== ClampToEdgeWrapping
-  )
-    return true;
-  if (texture.minFilter !== NearestFilter && texture.minFilter !== LinearFilter)
-    return true;
-  return false;
-};
 
 export default class ShadertoyReact extends Component<Props, *> {
   static defaultProps = {
@@ -164,7 +161,9 @@ export default class ShadertoyReact extends Component<Props, *> {
             type: 'sampler2D',
             isNeeded: false,
           };
-          return this.loadTexture(texture);
+         
+          this.textures[id] = new Texture(gl);
+          return this.textures[id].load(texture, id);
         });
 
         if (imagesLoaded) {
@@ -177,8 +176,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.drawScene();
       this.addEventListeners();
       this.onResize();
-
-      this.timeoutId = setTimeout(() => this.onResize(), 500);
+      // this.timeoutId = setTimeout(() => this.onResize(), 500);
     }
   };
 
@@ -194,8 +192,8 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.deleteProgram(this.shaderProgram);
 
       if (this.textures.length > 0) {
-        this.textures.forEach(texture => {
-          gl.deleteTexture(texture);
+        this.textures.forEach((texture) => {
+          gl.deleteTexture(texture.webglTexture);
         });
       }
 
@@ -351,139 +349,6 @@ export default class ShadertoyReact extends Component<Props, *> {
     this.mouseY = 0;
   };
 
-  makePowerOfTwo = (
-    image: HTMLImageElement | HTMLCanvasElement | ImageBitmap
-  ) => {
-    if (
-      image instanceof HTMLImageElement ||
-      image instanceof HTMLCanvasElement ||
-      image instanceof ImageBitmap
-    ) {
-      if (this.pow2canvas === undefined)
-        this.pow2canvas = document.createElement('canvas');
-
-      this.pow2canvas.width = floorPowerOfTwo(image.width);
-      this.pow2canvas.height = floorPowerOfTwo(image.height);
-
-      const context = this.pow2canvas.getContext('2d');
-      context.drawImage(
-        image,
-        0,
-        0,
-        this.pow2canvas.width,
-        this.pow2canvas.height
-      );
-
-      // eslint-disable-next-line
-      console.warn(
-        `ShadertoyReact: Image is not power of two ${image.width} x ${
-          image.height
-        }. Resized to ${this.pow2canvas.width} x ${this.pow2canvas.height}`
-      );
-
-      return this.pow2canvas;
-    }
-    return image;
-  };
-
-  loadTexture = (textureArgs: TextureType) => {
-    const { gl } = this;
-    const {
-      url,
-      wrapS,
-      wrapT,
-      minFilter,
-      magFilter,
-      flipY = -1,
-    }: TextureType = textureArgs;
-
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-
-    const level = 0;
-    const internalFormat = gl.RGBA;
-    const width = 1;
-    const height = 1;
-    const border = 0;
-    const srcFormat = gl.RGBA;
-    const srcType = gl.UNSIGNED_BYTE;
-    const pixel = new Uint8Array([255, 255, 255, 0]);
-
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      level,
-      internalFormat,
-      width,
-      height,
-      border,
-      srcFormat,
-      srcType,
-      pixel
-    );
-
-    return new Promise((resolve, reject) => {
-      let image = new Image();
-      image.crossOrigin = "anonymous";
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error(`failed loading url: ${url}`));
-      image.src = url;
-    }).then(image => {
-      let isPowerOfTwoImage =
-        isPowerOf2(image.width) && isPowerOf2(image.height);
-
-      if (textureNeedsPowerOfTwo(textureArgs) && isPowerOfTwoImage === false) {
-        image = this.makePowerOfTwo(image);
-        isPowerOfTwoImage = true;
-      }
-
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flipY);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        level,
-        internalFormat,
-        srcFormat,
-        srcType,
-        image
-      );
-
-      if (textureNeedsGenerateMipmaps(textureArgs, isPowerOfTwoImage)) {
-        gl.generateMipmap(gl.TEXTURE_2D);
-      }
-
-      if (minFilter) {
-        gl.texParameteri(
-          gl.TEXTURE_2D,
-          gl.TEXTURE_MIN_FILTER,
-          minFilter
-        );
-      }
-
-      if (magFilter) {
-        gl.texParameteri(
-          gl.TEXTURE_2D,
-          gl.TEXTURE_MAG_FILTER,
-          magFilter
-        );
-      }
-
-      if (wrapS && wrapT) {
-        gl.texParameteri(
-          gl.TEXTURE_2D,
-          gl.TEXTURE_WRAP_S,
-          wrapS
-        );
-        gl.texParameteri(
-          gl.TEXTURE_2D,
-          gl.TEXTURE_WRAP_T,
-          wrapT
-        );
-      }
-
-      this.textures.unshift(texture);
-    });
-  };
-
   drawScene = (timestamp: number) => {
     const { gl } = this;
     
@@ -584,9 +449,8 @@ export default class ShadertoyReact extends Component<Props, *> {
         builtInUniforms[uniform].isNeeded = true;
       }
     });
-    
     fsString = fsString.concat(FS_MAIN_SHADER);
-    console.log(fsString);
+    // console.log(fsString);
     return { fs: fsString, vs };
   };
 
@@ -631,15 +495,18 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
 
     if (this.textures.length > 0) {
-      this.textures.forEach((texture, id) => {
+      this.textures.forEach((texture: Texture, id: number) => {
+        const {isVideo, _webglTexture, source, flipY, isLoaded} = texture;
+        if(!isLoaded) return;
         if (builtInUniforms[`iChannel${id}`].isNeeded) {
           const iChannel = gl.getUniformLocation(
             this.shaderProgram,
             `iChannel${id}`
           );
           gl.activeTexture(gl[`TEXTURE${id}`]);
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.uniform1i(iChannel, id);
+          gl.bindTexture(gl.TEXTURE_2D, _webglTexture);
+          gl.uniform1i(iChannel, id); 
+          if(isVideo) texture.updateTexture(_webglTexture, source, flipY);          
         }
       });
     }

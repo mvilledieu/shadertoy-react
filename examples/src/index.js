@@ -32,7 +32,8 @@ const App = () =>
                 fs={fsImages}
                 textures={[
                     {url: 'https://i.imgur.com/uIEexIc.jpg'},
-                    {url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3GNakjyz1cQes5gq-gCH9o1QmBl0fjvAV0hwvn_DRpQfR1ZcKIg'},
+                    {url: 'https://i.imgur.com/OA5jUWi.jpg'},
+                    {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
                 ]}
             />
         </Test>
