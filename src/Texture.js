@@ -1,3 +1,4 @@
+// @flow
 export const NearestFilter = 9728;
 export const LinearFilter = 9729;
 export const NearestMipMapNearestFilter = 9984;
