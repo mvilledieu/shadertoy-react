@@ -24,6 +24,7 @@ Uniforms you can use in your shader.
   * `uniform vec2 iResolution` -- viewport resolution (in pixels).
   * `uniform vec2 iMouse` -- The mouse position (normalized value in between -1 -> 1) this differs from the uniform Shadertoy provides you, `iMouse` is in pixel in shadertoy. 
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
+  * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
 
 ### How to use it
 
@@ -57,10 +58,11 @@ Example of shader :
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
 * Add the rest of Shadertoy built in uniforms.
-* Add support for video textures.
+* ~~Add support for video textures.~~
 * Add support for WebGL2.
-* Add support for iChannelResolution.
+* ~~Add support for iChannelResolution.~~
 * Add support for iChannelTime.
 * Add uniform for phone device orientation / gyroscope based effects.
+* Add props for optionnal mouse lerping.
 
 WIP WIP WIP WIP WIP

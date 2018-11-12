@@ -78,6 +78,8 @@ export default class Texture {
     
       video.addEventListener('playing', () => {
          playing = true;
+         this.width = video.videoWidth || 0;
+         this.height = video.videoHeight || 0;
          checkReady();
       }, true);
     
@@ -194,7 +196,7 @@ export default class Texture {
             this.source = video;
             this.isVideo = true;
 
-            return video.play();
+            return video.play().then(() => this);
         }
 
         return new Promise((resolve, reject) => {
@@ -231,6 +233,10 @@ export default class Texture {
             this.source = image;
             this.isVideo = false;
             this.isLoaded = true;
+            this.width = image.width || 0;
+            this.height = image.height || 0;
+
+            return this;
         });
     }
 }

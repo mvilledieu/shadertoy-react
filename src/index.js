@@ -36,15 +36,10 @@ const FS_MAIN_SHADER =
     gl_FragColor = color;
 }`;
 
-const BASIC_FS = 
+const BASIC_FS = // Basic shadertoy shader
 `void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-    // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = fragCoord/iResolution.xy;
-
-    // Time varying pixel color
     vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-
-    // Output to screen
     fragColor = vec4(col,1.0);
 }`;
 
@@ -60,6 +55,7 @@ const UNIFORM_FRAME = 'iFrame';
 const UNIFORM_MOUSE = 'iMouse';
 const UNIFORM_RESOLUTION = 'iResolution';
 const UNIFORM_CHANNEL = 'iChannel';
+const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
 
 const builtInUniforms = {
   [UNIFORM_TIME]: {
@@ -123,12 +119,12 @@ const insertStringAtIndex = (
     : string + currentString;
 
 export default class ShadertoyReact extends Component<Props, *> {
+
   static defaultProps = {
     textures: [],
     contextOptions: { premultipliedAlpha: false, alpha: true },
     devicePixelRatio: 1,
     vs: BASIC_VS,
-    customStyle: ``,
   };
 
   componentDidMount = () => {
@@ -148,17 +144,34 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.width = this.canvas.clientWidth;
 
       if (textures && textures.length > 0) {
+
+        builtInUniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
+          type: 'vec3',
+          isNeeded: false,
+          arraySize: `[${textures.length - 1}]`,
+        };
+
         const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
+          
+          this.texturesResolution[id] = [0, 0, 0];
+
           builtInUniforms[`${UNIFORM_CHANNEL}${id}`] = {
             type: 'sampler2D',
             isNeeded: false,
           };
+
           this.textures[id] = new Texture(gl);
-          return this.textures[id].load(texture, id);
+          return this.textures[id]
+                  .load(texture, id)
+                  .then(texture => this.setupChannelRes(texture, id));
         });
 
-        if (onDoneLoadingTextures) Promise.all(texturePromisesArr).then(() => onDoneLoadingTextures());
+        Promise.all(texturePromisesArr)
+          .then(() => {
+            if (onDoneLoadingTextures) onDoneLoadingTextures();
+          });
       }
+      
       const shaders = this.preProcessShaders(fs || BASIC_FS, vs || BASIC_VS);
       this.initShaders(shaders);
       this.initBuffers();
@@ -194,37 +207,9 @@ export default class ShadertoyReact extends Component<Props, *> {
     cancelAnimationFrame(this.animFrameId);
   }
 
-  gl: WebGLRenderingContext;
-
-  squareVerticesBuffer: WebGLBuffer;
-
-  shaderProgram: WebGLProgram;
-
-  vertexPositionAttribute: number;
-
-  animFrameId: AnimationFrameID;
-
-  timeoutId: TimeoutID;
-
-  canvas: HTMLCanvasElement;
-
-  pow2canvas: HTMLCanvasElement;
-
-  mouse: Object = { x: 0, y: 0 };
-
-  mouseX: number = 0;
-
-  mouseY: number = 0;
-
-  canvasPosition: Object = {};
-
-  timer: number = 0;
-
-  textures: Array<WebGLTexture> = [];
-
-  lastTime: number = 0;
-
-  frame: number = 0;
+  setupChannelRes = ({width, height}: Texture, id: number) => {
+    this.texturesResolution[id] = [ width, height, 0 ];
+  }
 
   initWebGL = () => {
     const { contextOptions } = this.props;
@@ -275,6 +260,12 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.addEventListener('mouseout', this.onMouseOut, {
         passive: true,
       });
+      this.canvas.addEventListener('touchmove', this.onMouseMove, {
+        passive: true,
+      });
+      this.canvas.addEventListener('touchend', this.onMouseOut, {
+        passive: true,
+      });
     }
 
     window.addEventListener('resize', this.onResize, { passive: true });
@@ -286,6 +277,12 @@ export default class ShadertoyReact extends Component<Props, *> {
         passive: true,
       });
       this.canvas.removeEventListener('mouseout', this.onMouseOut, {
+        passive: true,
+      });
+      this.canvas.removeEventListener('touchmove', this.onMouseMove, {
+        passive: true,
+      });
+      this.canvas.removeEventListener('touchend', this.onMouseOut, {
         passive: true,
       });
     }
@@ -432,14 +429,14 @@ export default class ShadertoyReact extends Component<Props, *> {
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
-          `uniform ${builtInUniforms[uniform].type} ${uniform}; \n`,
+          `uniform ${builtInUniforms[uniform].type} ${uniform}${builtInUniforms[uniform].arraySize || ''}; \n`,
           index + string.length + 1
         );
         builtInUniforms[uniform].isNeeded = true;
       }
     });
     fsString = fsString.concat(FS_MAIN_SHADER);
-    // console.log(fsString);
+    console.log(fsString);
     return { fs: fsString, vs };
   };
 
@@ -457,6 +454,14 @@ export default class ShadertoyReact extends Component<Props, *> {
       );
       // $FlowFixMe
       gl.uniform2fv(mouseUniform, [this.mouse.x, this.mouse.y]);
+    }
+    
+    if(builtInUniforms.iChannelResolution.isNeeded && this.texturesResolution.length > 0){
+      const channelResUniform = gl.getUniformLocation(
+        this.shaderProgram,
+        UNIFORM_CHANNELRESOLUTION
+      );
+      gl.uniform3fv(channelResUniform, this.texturesResolution.flat());
     }
 
     if (builtInUniforms.iTime.isNeeded) {
@@ -504,6 +509,24 @@ export default class ShadertoyReact extends Component<Props, *> {
   registerCanvas = (r: HTMLCanvasElement) => {
     this.canvas = r;
   };
+
+  gl: WebGLRenderingContext;
+  squareVerticesBuffer: WebGLBuffer;
+  shaderProgram: WebGLProgram;
+  vertexPositionAttribute: number;
+  animFrameId: AnimationFrameID;
+  timeoutId: TimeoutID;
+  canvas: HTMLCanvasElement;
+  pow2canvas: HTMLCanvasElement;
+  mouse: Object = { x: 0, y: 0 };
+  mouseX: number = 0;
+  mouseY: number = 0;
+  canvasPosition: Object = {};
+  timer: number = 0;
+  textures: Array<WebGLTexture> = [];
+  texturesResolution: Array<> = [];
+  lastTime: number = 0;
+  frame: number = 0;
 
   render = () => {
     const { style } = this.props;
