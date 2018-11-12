@@ -16,8 +16,12 @@ I tried to stay as close as possible to the Shadertoy implementation. Basically 
 
 ### Built in uniforms
 
-  * `uniform float iTime` -- shader playback time (in seconds)
-  * `uniform vec2 iResolution` -- viewport resolution (in pixels);
+Uniforms you can use in your shader.
+
+  * `uniform float iTime` -- shader playback time (in seconds).
+  * `uniform float iTimeDelta` -- Render time (in seconds).
+  * `uniform int iFrame` -- Shader playback frame.
+  * `uniform vec2 iResolution` -- viewport resolution (in pixels).
   * `uniform vec2 iMouse` -- The mouse position (normalized value in between -1 -> 1) this differs from the uniform Shadertoy provides you, `iMouse` is in pixel in shadertoy. 
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
 
@@ -50,10 +54,13 @@ Example of shader :
 
 ### What's next
 
-* Add support to multi passes as Shadertoy is doing. 
-* Add support for Cube texture. 
+* Add support to multi passes as Shadertoy is doing.
+* Add support for Cube texture.
 * Add the rest of Shadertoy built in uniforms.
-* Add support for video textures. 
+* Add support for video textures.
 * Add support for WebGL2.
+* Add support for iChannelResolution.
+* Add support for iChannelTime.
+* Add uniform for phone device orientation / gyroscope based effects.
 
 WIP WIP WIP WIP WIP

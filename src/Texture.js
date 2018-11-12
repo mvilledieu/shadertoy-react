@@ -34,19 +34,19 @@ const textureNeedsPowerOfTwo = (texture: TextureType) => {
 export default class Texture {
     constructor(gl) {
       this.gl = gl;
-  
-      this.isLoaded = false;
-  
-      this.url = null;
-      this.wrapS = null;
-      this.wrapT = null;
-      this.minFilter = null;
-      this.magFilter = null;
-      this.source = null;
-      this.flipY = null;
-  
-      this._webglTexture = null;
     } 
+  
+    isLoaded: boolean = false;
+    url: string;
+    wrapS: number;
+    wrapT: number;
+    minFilter: number;
+    magFilter: number;
+    source: HTMLImageElement | HTMLVideoElement;
+    flipY: number = -1;
+    width: number = 0;
+    height: number = 0;
+    _webglTexture: WebGLTexture = null;
   
     updateTexture = (texture: WebGLTexture, video: HTMLVideoElement, flipY: boolean) => {
       const { gl } = this; 
@@ -87,7 +87,7 @@ export default class Texture {
       }, true);
     
       video.src = url;
-      video.play();
+      // video.play();
     
       return video;
     }
@@ -194,7 +194,7 @@ export default class Texture {
             this.source = video;
             this.isVideo = true;
 
-            return texture;
+            return video.play();
         }
 
         return new Promise((resolve, reject) => {

@@ -85,7 +85,7 @@ const builtInUniforms = {
 };
 
 /* eslint-disable */
-type TextureType = {
+type TexturePropsType = {
   url: string,
   wrapS?: number,
   wrapT?: number,
@@ -95,28 +95,20 @@ type TextureType = {
 };
 /* eslint-emable */
 
-type TextureObject = {
-  texture: WebGLTexture,
-  source:HTMLImageElement | HTMLVideoElement,
-  isVideo: boolean,
-};
-
 type Props = {
   fs: string,
   vs?: string,
-  textures?: Array<TextureType>,
+  textures?: Array<TexturePropsType>,
   customStyle?: string,
   contextOptions?: Object,
   devicePixelRatio?: number,
-  imagesLoaded?: Function,
+  onDoneLoadingTextures?: Function,
 };
 
 type Shaders = {
   fs: string,
   vs: string,
 };
-
-const INCREMENT_TIME = 0.02;
 
 const lerp = (v0: number, v1: number, t: number) => v0 * (1 - t) + v1 * t;
 const insertStringAtIndex = (
@@ -142,7 +134,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   componentDidMount = () => {
     this.initWebGL();
 
-    const { fs, vs, textures, imagesLoaded } = this.props;
+    const { fs, vs, textures, onDoneLoadingTextures } = this.props;
     const { gl } = this;
 
     if (gl) {
@@ -156,19 +148,16 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.width = this.canvas.clientWidth;
 
       if (textures && textures.length > 0) {
-        const texturePromisesArr = textures.map((texture: TextureType, id: number) => {
+        const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
           builtInUniforms[`${UNIFORM_CHANNEL}${id}`] = {
             type: 'sampler2D',
             isNeeded: false,
           };
-         
           this.textures[id] = new Texture(gl);
           return this.textures[id].load(texture, id);
         });
 
-        if (imagesLoaded) {
-          Promise.all(texturePromisesArr).then(() => imagesLoaded());
-        }
+        if (onDoneLoadingTextures) Promise.all(texturePromisesArr).then(() => onDoneLoadingTextures());
       }
       const shaders = this.preProcessShaders(fs || BASIC_FS, vs || BASIC_VS);
       this.initShaders(shaders);
