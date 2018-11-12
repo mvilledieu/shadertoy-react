@@ -62,6 +62,7 @@ Example of shader :
 * Add support for WebGL2.
 * ~~Add support for iChannelResolution.~~
 * Add support for iChannelTime.
+* Add support for iDate.
 * Add uniform for phone device orientation / gyroscope based effects.
 * Add props for optionnal mouse lerping.
 
