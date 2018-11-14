@@ -231,18 +231,10 @@ export default class ShadertoyReact extends Component<Props, *> {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticesBuffer);
 
     const vertices = [
-      1.0,
-      1.0,
-      0.0,
-      -1.0,
-      1.0,
-      0.0,
-      1.0,
-      -1.0,
-      0.0,
-      -1.0,
-      -1.0,
-      0.0,
+      1.0, 1.0, 0.0, 
+      -1.0, 1.0, 0.0, 
+      1.0, -1.0, 0.0, 
+      -1.0, -1.0, 0.0,
     ];
 
     gl.bufferData(
@@ -422,21 +414,24 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   preProcessShaders = (fs: string, vs: string) => {
-    let fsString = FS_PRECISION_PREPROCESSOR.concat(fs);
-    const string = '#endif';
-    const index = fsString.lastIndexOf(string);
+    let fsString = FS_PRECISION_PREPROCESSOR
+                    .concat(fs)
+                    .replace(/texture\(/g, 'texture2D(');
+
+    const lastPreprocessorString = '#endif';
+    const index = fsString.lastIndexOf(lastPreprocessorString);
     Object.keys(builtInUniforms).forEach((uniform: string) => {
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
           `uniform ${builtInUniforms[uniform].type} ${uniform}${builtInUniforms[uniform].arraySize || ''}; \n`,
-          index + string.length + 1
+          index + lastPreprocessorString.length + 1
         );
         builtInUniforms[uniform].isNeeded = true;
       }
     });
     fsString = fsString.concat(FS_MAIN_SHADER);
-    console.log(fsString);
+    // console.log(fsString);
     return { fs: fsString, vs };
   };
 
