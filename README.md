@@ -19,7 +19,7 @@ Uniforms you can use in your shader.
   * `uniform float iTimeDelta` -- Render time (in seconds).
   * `uniform int iFrame` -- Shader playback frame.
   * `uniform vec2 iResolution` -- viewport resolution (in pixels).
-  * `uniform vec2 iMouse` -- The mouse position (normalized value in between -1 -> 1) this differs from the uniform Shadertoy provides you, `iMouse` is in pixel in shadertoy. 
+  * `uniform vec4 iMouse` -- mouse pixel coords. xy: current (if MLB down), zw: click.
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
   * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
 
