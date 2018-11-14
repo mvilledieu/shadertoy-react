@@ -5,14 +5,11 @@ Shadertoy React
 
 Simple react component letting you easily add shaders you've been building on Shadertoy to your React page. I found myself using Shadertoy most of the time when I needed to create some shader for projects, since the live reload functionnality makes it really easy to start working on the visual quickly. 
 
-**The problem:** 
-Most of the time I endup having to change the name of uniforms and built in to make sure my shader is going to run on my website. 
-
  Can be really usefull when you want to add some interactive pieces in your web page or even just replace static images by interactive/generative shader.
 
 ### The way it works
 
-I tried to stay as close as possible to the Shadertoy implementation. Basically it uses a WebGL context on a `<canvas/>` element. The module matches the size of the parent div by default. 
+I tried to stay as close as possible to the Shadertoy implementation. Basically it uses a WebGL context on a `<canvas/>` and render a material on a full viewport 2D plane composed of 2 triangles. The canvas matches the size of the parent div by default. 
 
 ### Built in uniforms
 
@@ -58,12 +55,13 @@ Example of shader :
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
 * Add the rest of Shadertoy built in uniforms.
-* ~~Add support for video textures.~~
 * Add support for WebGL2.
-* ~~Add support for iChannelResolution.~~
 * Add support for iChannelTime.
 * Add support for iDate.
 * Add uniform for phone device orientation / gyroscope based effects.
 * Add props for optionnal mouse lerping.
+* Add support for custom uniforms.
+* ~~Add support for video textures.~~
+* ~~Add support for iChannelResolution.~~
 
 WIP WIP WIP WIP WIP
