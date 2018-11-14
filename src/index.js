@@ -61,22 +61,27 @@ const builtInUniforms = {
   [UNIFORM_TIME]: {
     type: 'float',
     isNeeded: false,
+    value: 0,
   },
   [UNIFORM_MOUSE]: {
-    type: 'vec2',
+    type: 'vec4',
     isNeeded: false,
+    value: [0, 0, 0, 0],
   },
   [UNIFORM_RESOLUTION]: {
     type: 'vec2',
     isNeeded: false,
+    value: [0, 0],
   },
   [UNIFORM_FRAME]: {
     type: 'int',
     isNeeded: false,
+    value: 0,
   },
   [UNIFORM_TIMEDELTA]: {
     type: 'float',
     isNeeded: false,
+    value: 0,
   },
 };
 
@@ -246,18 +251,13 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   addEventListeners = () => {
     if (builtInUniforms.iMouse.isNeeded) {
-      this.canvas.addEventListener('mousemove', this.onMouseMove, {
-        passive: true,
-      });
-      this.canvas.addEventListener('mouseout', this.onMouseOut, {
-        passive: true,
-      });
-      this.canvas.addEventListener('touchmove', this.onMouseMove, {
-        passive: true,
-      });
-      this.canvas.addEventListener('touchend', this.onMouseOut, {
-        passive: true,
-      });
+      this.canvas.addEventListener('mousemove', this.mouseMove);
+      this.canvas.addEventListener('mouseout', this.mouseUp);
+      this.canvas.addEventListener('mouseup', this.mouseUp);
+      this.canvas.addEventListener('mousedown', this.mouseDown);
+
+      this.canvas.addEventListener('touchmove', this.mouseMove);
+      this.canvas.addEventListener('touchend', this.mouseUp);
     }
 
     window.addEventListener('resize', this.onResize, { passive: true });
@@ -265,32 +265,44 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   removeEventListeners = () => {
     if (builtInUniforms.iMouse.isNeeded) {
-      this.canvas.removeEventListener('mousemove', this.onMouseMove, {
-        passive: true,
-      });
-      this.canvas.removeEventListener('mouseout', this.onMouseOut, {
-        passive: true,
-      });
-      this.canvas.removeEventListener('touchmove', this.onMouseMove, {
-        passive: true,
-      });
-      this.canvas.removeEventListener('touchend', this.onMouseOut, {
-        passive: true,
-      });
+      this.canvas.removeEventListener('mousemove', this.mouseMove);
+      this.canvas.removeEventListener('mouseout', this.mouseUp);
+      this.canvas.removeEventListener('mouseup', this.mouseUp);
+      this.canvas.removeEventListener('mousedown', this.mouseDown);
+
+      this.canvas.removeEventListener('touchmove', this.mouseMove);
+      this.canvas.removeEventListener('touchend', this.mouseUp);
     }
 
     window.removeEventListener('resize', this.onResize, { passive: true });
   };
 
-  onMouseMove = (event: SyntheticMouseEvent<*>) => {
-    const canvasPosition = this.canvas.getBoundingClientRect();
+  mouseDown = e => {
+    this.canvasPosition = this.canvas.getBoundingClientRect();
 
-    const mouseX = event.clientX - canvasPosition.left;
-    const mouseY = event.clientY - canvasPosition.top;
+    let mouseX = (e.clientX || e.touches[0].clientX) - this.canvasPosition.left;
+    let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
 
-    this.mouseX = 2 * (mouseX / canvasPosition.width) - 1;
-    this.mouseY = 1 - 2 * (mouseY / canvasPosition.height);
-  };
+    this.mousedown = true;
+    this.iMouse[2] = mouseX;
+    this.iMouse[3] = mouseY;
+  }
+
+  mouseMove = e => {
+    if (!this.mousedown) return;
+    
+    let mouseX = (e.clientX || e.touches[0].clientX) - this.canvasPosition.left;
+    let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
+
+    this.iMouse[0] = mouseX;
+    this.iMouse[1] = mouseY;
+  }
+
+  mouseUp = e => {
+    this.mousedown = false;
+    this.iMouse[2] = 0;
+    this.iMouse[3] = 0;
+  }
 
   onResize = () => {
     const { gl } = this;
@@ -322,11 +334,6 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
   };
 
-  onMouseOut = () => {
-    this.mouseX = 0;
-    this.mouseY = 0;
-  };
-
   drawScene = (timestamp: number) => {
     const { gl } = this;
     
@@ -353,10 +360,10 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    if (builtInUniforms.iMouse.isNeeded) {
-      this.mouse.x = lerp(this.mouse.x, this.mouseX, 0.1);
-      this.mouse.y = lerp(this.mouse.y, this.mouseY, 0.1);
-    }
+    // if (builtInUniforms.iMouse.isNeeded) {
+    //   this.iMouse[0] = lerp(this.iMouse[0], this.mouseX, 0.1);
+    //   this.iMouse[1] = lerp(this.iMouse[1], this.mouseY, 0.1);
+    // }
 
     this.animFrameId = requestAnimationFrame(this.drawScene);
   };
@@ -431,7 +438,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       }
     });
     fsString = fsString.concat(FS_MAIN_SHADER);
-    // console.log(fsString);
+    console.log(fsString);
     return { fs: fsString, vs };
   };
 
@@ -448,7 +455,7 @@ export default class ShadertoyReact extends Component<Props, *> {
         UNIFORM_MOUSE
       );
       // $FlowFixMe
-      gl.uniform2fv(mouseUniform, [this.mouse.x, this.mouse.y]);
+      gl.uniform4fv(mouseUniform, [this.iMouse[0], this.iMouse[1], this.iMouse[2], this.iMouse[3] ]);
     }
     
     if(builtInUniforms.iChannelResolution.isNeeded && this.texturesResolution.length > 0){
@@ -513,7 +520,8 @@ export default class ShadertoyReact extends Component<Props, *> {
   timeoutId: TimeoutID;
   canvas: HTMLCanvasElement;
   pow2canvas: HTMLCanvasElement;
-  mouse: Object = { x: 0, y: 0 };
+  iMouse: Array<number> = [4];
+  mousedown: boolean = false;
   mouseX: number = 0;
   mouseY: number = 0;
   canvasPosition: Object = {};

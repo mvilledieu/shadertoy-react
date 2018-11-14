@@ -4,6 +4,7 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import ShadertoyReact from '../../src';
 import fs from './shaders/fs';
 import fsImages from './shaders/fsImages';
+import mouse from './shaders/mouse';
 
 const GlobalStyle = createGlobalStyle`
     body, html {
@@ -74,7 +75,7 @@ class App extends Component {
                 />
             </Test1>
             <Test>  
-                <ShadertoyReact fs={fs}/>
+                <ShadertoyReact fs={mouse}/>
             </Test>  
             <Test>  
                 <ShadertoyReact fs={fs}/>
