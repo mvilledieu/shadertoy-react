@@ -26,7 +26,7 @@ export {
 
 const FS_PRECISION_PREPROCESSOR = 
 `#ifdef GL_ES
-    precision mediump float;
+    precision highp float;
 #endif\n`;
 
 const FS_MAIN_SHADER = 
@@ -51,6 +51,7 @@ void main(void) {
 
 const UNIFORM_TIME = 'iTime';
 const UNIFORM_TIMEDELTA = 'iTimeDelta';
+const UNIFORM_DATE = 'iDate';
 const UNIFORM_FRAME = 'iFrame';
 const UNIFORM_MOUSE = 'iMouse';
 const UNIFORM_RESOLUTION = 'iResolution';
@@ -62,6 +63,16 @@ const builtInUniforms = {
     type: 'float',
     isNeeded: false,
     value: 0,
+  },
+  [UNIFORM_TIMEDELTA]: {
+    type: 'float',
+    isNeeded: false,
+    value: 0,
+  },
+  [UNIFORM_DATE]: {
+    type: 'vec4',
+    isNeeded: false,
+    value: [0, 0, 0, 0],
   },
   [UNIFORM_MOUSE]: {
     type: 'vec4',
@@ -75,11 +86,6 @@ const builtInUniforms = {
   },
   [UNIFORM_FRAME]: {
     type: 'int',
-    isNeeded: false,
-    value: 0,
-  },
-  [UNIFORM_TIMEDELTA]: {
-    type: 'float',
     isNeeded: false,
     value: 0,
   },
@@ -100,10 +106,11 @@ type Props = {
   fs: string,
   vs?: string,
   textures?: Array<TexturePropsType>,
-  customStyle?: string,
+  style?: string,
   contextOptions?: Object,
-  devicePixelRatio?: number,
   onDoneLoadingTextures?: Function,
+  lerp?: number,
+  devicePixelRatio?: number,
 };
 
 type Shaders = {
@@ -111,7 +118,7 @@ type Shaders = {
   vs: string,
 };
 
-const lerp = (v0: number, v1: number, t: number) => v0 * (1 - t) + v1 * t;
+const lerpVal = (v0: number, v1: number, t: number) => v0 * (1 - t) + v1 * t;
 const insertStringAtIndex = (
   currentString: string,
   string: string,
@@ -286,16 +293,25 @@ export default class ShadertoyReact extends Component<Props, *> {
     this.mousedown = true;
     this.iMouse[2] = mouseX;
     this.iMouse[3] = mouseY;
+
+    this.lastMouse[0] = mouseX;
+    this.lastMouse[1] = mouseY;
   }
 
   mouseMove = e => {
+    const { lerp = 1 } = this.props;
     if (!this.mousedown) return;
     
     let mouseX = (e.clientX || e.touches[0].clientX) - this.canvasPosition.left;
     let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
 
-    this.iMouse[0] = mouseX;
-    this.iMouse[1] = mouseY;
+    if(lerp !== 1){
+      this.lastMouse[0] = mouseX;
+      this.lastMouse[1] = mouseY;
+    } else {
+      this.iMouse[0] = mouseX;
+      this.iMouse[1] = mouseY;  
+    }
   }
 
   mouseUp = e => {
@@ -336,6 +352,7 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   drawScene = (timestamp: number) => {
     const { gl } = this;
+    const { lerp = 1 } = this.props;
     
     gl.viewport(
       0,
@@ -360,10 +377,10 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    // if (builtInUniforms.iMouse.isNeeded) {
-    //   this.iMouse[0] = lerp(this.iMouse[0], this.mouseX, 0.1);
-    //   this.iMouse[1] = lerp(this.iMouse[1], this.mouseY, 0.1);
-    // }
+    if (builtInUniforms.iMouse.isNeeded && lerp !== 1) {
+      this.iMouse[0] = lerpVal(this.iMouse[0], this.lastMouse[0], lerp);
+      this.iMouse[1] = lerpVal(this.iMouse[1], this.lastMouse[1], lerp);
+    }
 
     this.animFrameId = requestAnimationFrame(this.drawScene);
   };
@@ -458,7 +475,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.uniform4fv(mouseUniform, [this.iMouse[0], this.iMouse[1], this.iMouse[2], this.iMouse[3] ]);
     }
     
-    if(builtInUniforms.iChannelResolution.isNeeded && this.texturesResolution.length > 0){
+    if(builtInUniforms.iChannelResolution && builtInUniforms.iChannelResolution.isNeeded && this.texturesResolution.length > 0){
       const channelResUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_CHANNELRESOLUTION
@@ -480,6 +497,24 @@ export default class ShadertoyReact extends Component<Props, *> {
         UNIFORM_TIMEDELTA
       );
       gl.uniform1f(timeUniform, delta );
+    }
+
+    if (builtInUniforms.iDate.isNeeded) {
+
+      const d= new Date() ;
+      const month = d.getMonth() + 1; // the month (from 0-11)
+      const day = d.getDate() ; // the day of the month (from 1-31)
+      const year = d.getFullYear(); // the year (four digits)
+      const time = d.getHours()*60.0*60 + d.getMinutes()*60 + d.getSeconds();
+
+      console.log(d, month, day, year, time);
+    
+      const dateUniform = gl.getUniformLocation(
+        this.shaderProgram,
+        UNIFORM_DATE
+      );
+      
+      gl.uniform4fv(dateUniform, [year, month, day, time]);
     }
 
     if (builtInUniforms.iFrame.isNeeded) {
@@ -520,10 +555,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   timeoutId: TimeoutID;
   canvas: HTMLCanvasElement;
   pow2canvas: HTMLCanvasElement;
-  iMouse: Array<number> = [4];
+  iMouse: Array<number> = [0, 0, 0, 0];
+  lastMouse: Array<number> = [0, 0];
   mousedown: boolean = false;
-  mouseX: number = 0;
-  mouseY: number = 0;
   canvasPosition: Object = {};
   timer: number = 0;
   textures: Array<WebGLTexture> = [];

@@ -5,6 +5,7 @@ import ShadertoyReact from '../../src';
 import fs from './shaders/fs';
 import fsImages from './shaders/fsImages';
 import mouse from './shaders/mouse';
+import clock from './shaders/clock';
 
 const GlobalStyle = createGlobalStyle`
     body, html {
@@ -75,10 +76,10 @@ class App extends Component {
                 />
             </Test1>
             <Test>  
-                <ShadertoyReact fs={mouse}/>
+                <ShadertoyReact fs={mouse} />
             </Test>  
             <Test>  
-                <ShadertoyReact fs={fs}/>
+                <ShadertoyReact fs={clock}/>
             </Test>  
             <Test>  
                 <ShadertoyReact fs={fs}/>

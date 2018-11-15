@@ -19,6 +19,7 @@ Uniforms you can use in your shader.
   * `uniform float iTimeDelta` -- Render time (in seconds).
   * `uniform int iFrame` -- Shader playback frame.
   * `uniform vec2 iResolution` -- viewport resolution (in pixels).
+  * `uniform vec4 iDate` -- (year, month, day, time in seconds).
   * `uniform vec4 iMouse` -- mouse pixel coords. xy: current (if MLB down), zw: click.
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
   * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
@@ -55,12 +56,13 @@ Example of shader :
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
 * Add the rest of Shadertoy built in uniforms.
-* Add support for WebGL2.
+* Add support for WebGL2 and GLSL 3.0.
 * Add support for iChannelTime.
-* Add support for iDate.
 * Add uniform for phone device orientation / gyroscope based effects.
 * Add props for optionnal mouse lerping.
 * Add support for custom uniforms.
+* Add support for keyboard uniforms / inputs.
+* ~~Add support for iDate.~~
 * ~~Add support for video textures.~~
 * ~~Add support for iChannelResolution.~~
 
