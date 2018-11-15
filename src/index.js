@@ -58,39 +58,6 @@ const UNIFORM_RESOLUTION = 'iResolution';
 const UNIFORM_CHANNEL = 'iChannel';
 const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
 
-const builtInUniforms = {
-  [UNIFORM_TIME]: {
-    type: 'float',
-    isNeeded: false,
-    value: 0,
-  },
-  [UNIFORM_TIMEDELTA]: {
-    type: 'float',
-    isNeeded: false,
-    value: 0,
-  },
-  [UNIFORM_DATE]: {
-    type: 'vec4',
-    isNeeded: false,
-    value: [0, 0, 0, 0],
-  },
-  [UNIFORM_MOUSE]: {
-    type: 'vec4',
-    isNeeded: false,
-    value: [0, 0, 0, 0],
-  },
-  [UNIFORM_RESOLUTION]: {
-    type: 'vec2',
-    isNeeded: false,
-    value: [0, 0],
-  },
-  [UNIFORM_FRAME]: {
-    type: 'int',
-    isNeeded: false,
-    value: 0,
-  },
-};
-
 /* eslint-disable */
 type TexturePropsType = {
   url: string,
@@ -132,6 +99,44 @@ const insertStringAtIndex = (
 
 export default class ShadertoyReact extends Component<Props, *> {
 
+  constructor(props){
+    super(props);
+
+    this.uniforms = {
+      [UNIFORM_TIME]: {
+        type: 'float',
+        isNeeded: false,
+        value: 0,
+      },
+      [UNIFORM_TIMEDELTA]: {
+        type: 'float',
+        isNeeded: false,
+        value: 0,
+      },
+      [UNIFORM_DATE]: {
+        type: 'vec4',
+        isNeeded: false,
+        value: [0, 0, 0, 0],
+      },
+      [UNIFORM_MOUSE]: {
+        type: 'vec4',
+        isNeeded: false,
+        value: [0, 0, 0, 0],
+      },
+      [UNIFORM_RESOLUTION]: {
+        type: 'vec2',
+        isNeeded: false,
+        value: [0, 0],
+      },
+      [UNIFORM_FRAME]: {
+        type: 'int',
+        isNeeded: false,
+        value: 0,
+      },
+    };
+    
+  }
+
   static defaultProps = {
     textures: [],
     contextOptions: { premultipliedAlpha: false, alpha: true },
@@ -157,23 +162,22 @@ export default class ShadertoyReact extends Component<Props, *> {
 
       if (textures && textures.length > 0) {
 
-        builtInUniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
+        this.uniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
           type: 'vec3',
           isNeeded: false,
           arraySize: `[${textures.length - 1}]`,
+          value: [],
         };
 
         const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
-          
-          this.texturesResolution[id] = [0, 0, 0];
 
-          builtInUniforms[`${UNIFORM_CHANNEL}${id}`] = {
+          this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
             type: 'sampler2D',
             isNeeded: false,
-          };
+          }; // Dynamically add textures uniforms
 
-          this.textures[id] = new Texture(gl);
-          return this.textures[id]
+          this.texturesArr[id] = new Texture(gl);
+          return this.texturesArr[id]
                   .load(texture, id)
                   .then(texture => this.setupChannelRes(texture, id));
         });
@@ -205,8 +209,8 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.useProgram(null);
       gl.deleteProgram(this.shaderProgram);
 
-      if (this.textures.length > 0) {
-        this.textures.forEach((texture) => {
+      if (this.texturesArr.length > 0) {
+        this.texturesArr.forEach((texture) => {
           gl.deleteTexture(texture.webglTexture);
         });
       }
@@ -215,12 +219,15 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
 
     this.removeEventListeners();
-    clearTimeout(this.timeoutId);
+    // clearTimeout(this.timeoutId);
     cancelAnimationFrame(this.animFrameId);
   }
 
   setupChannelRes = ({width, height}: Texture, id: number) => {
-    this.texturesResolution[id] = [ width, height, 0 ];
+    this.uniforms.iChannelResolution.value[id * 3] = width;
+    this.uniforms.iChannelResolution.value[id * 3 + 1] = height;
+    this.uniforms.iChannelResolution.value[id * 3 + 2] = 0;
+    // console.log(this.uniforms.iChannelResolution);
   }
 
   initWebGL = () => {
@@ -257,7 +264,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   addEventListeners = () => {
-    if (builtInUniforms.iMouse.isNeeded) {
+    if (this.uniforms.iMouse.isNeeded) {
       this.canvas.addEventListener('mousemove', this.mouseMove);
       this.canvas.addEventListener('mouseout', this.mouseUp);
       this.canvas.addEventListener('mouseup', this.mouseUp);
@@ -271,7 +278,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   removeEventListeners = () => {
-    if (builtInUniforms.iMouse.isNeeded) {
+    if (this.uniforms.iMouse.isNeeded) {
       this.canvas.removeEventListener('mousemove', this.mouseMove);
       this.canvas.removeEventListener('mouseout', this.mouseUp);
       this.canvas.removeEventListener('mouseup', this.mouseUp);
@@ -291,11 +298,11 @@ export default class ShadertoyReact extends Component<Props, *> {
     let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
 
     this.mousedown = true;
-    this.iMouse[2] = mouseX;
-    this.iMouse[3] = mouseY;
+    this.uniforms.iMouse.value[2] = mouseX;
+    this.uniforms.iMouse.value[3] = mouseY;
 
-    this.lastMouse[0] = mouseX;
-    this.lastMouse[1] = mouseY;
+    this.lastMouseArr[0] = mouseX;
+    this.lastMouseArr[1] = mouseY;
   }
 
   mouseMove = e => {
@@ -306,18 +313,18 @@ export default class ShadertoyReact extends Component<Props, *> {
     let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
 
     if(lerp !== 1){
-      this.lastMouse[0] = mouseX;
-      this.lastMouse[1] = mouseY;
+      this.lastMouseArr[0] = mouseX;
+      this.lastMouseArr[1] = mouseY;
     } else {
-      this.iMouse[0] = mouseX;
-      this.iMouse[1] = mouseY;  
+      this.uniforms.iMouse.value[0] = mouseX;
+      this.uniforms.iMouse.value[1] = mouseY;  
     }
   }
 
   mouseUp = e => {
     this.mousedown = false;
-    this.iMouse[2] = 0;
-    this.iMouse[3] = 0;
+    this.uniforms.iMouse.value[2] = 0;
+    this.uniforms.iMouse.value[3] = 0;
   }
 
   onResize = () => {
@@ -337,7 +344,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     gl.canvas.width = displayWidth;
     gl.canvas.height = displayHeight;
 
-    if (builtInUniforms.iResolution.isNeeded) {
+    if (this.uniforms.iResolution.isNeeded) {
       const rUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_RESOLUTION
@@ -377,9 +384,9 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    if (builtInUniforms.iMouse.isNeeded && lerp !== 1) {
-      this.iMouse[0] = lerpVal(this.iMouse[0], this.lastMouse[0], lerp);
-      this.iMouse[1] = lerpVal(this.iMouse[1], this.lastMouse[1], lerp);
+    if (this.uniforms.iMouse.isNeeded && lerp !== 1) {
+      this.uniforms.iMouse.value[0] = lerpVal(this.uniforms.iMouse.value[0], this.lastMouseArr[0], lerp);
+      this.uniforms.iMouse.value[1] = lerpVal(this.uniforms.iMouse.value[1], this.lastMouseArr[1], lerp);
     }
 
     this.animFrameId = requestAnimationFrame(this.drawScene);
@@ -444,18 +451,18 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     const lastPreprocessorString = '#endif';
     const index = fsString.lastIndexOf(lastPreprocessorString);
-    Object.keys(builtInUniforms).forEach((uniform: string) => {
+    Object.keys(this.uniforms).forEach((uniform: string) => {
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
-          `uniform ${builtInUniforms[uniform].type} ${uniform}${builtInUniforms[uniform].arraySize || ''}; \n`,
+          `uniform ${this.uniforms[uniform].type} ${uniform}${this.uniforms[uniform].arraySize || ''}; \n`,
           index + lastPreprocessorString.length + 1
         );
-        builtInUniforms[uniform].isNeeded = true;
+        this.uniforms[uniform].isNeeded = true;
       }
     });
     fsString = fsString.concat(FS_MAIN_SHADER);
-    console.log(fsString);
+    // console.log(fsString);
     return { fs: fsString, vs };
   };
 
@@ -466,24 +473,24 @@ export default class ShadertoyReact extends Component<Props, *> {
     let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
     this.lastTime = timestamp;
 
-    if (builtInUniforms.iMouse.isNeeded) {
+    if (this.uniforms.iMouse.isNeeded) {
       const mouseUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_MOUSE
       );
       // $FlowFixMe
-      gl.uniform4fv(mouseUniform, [this.iMouse[0], this.iMouse[1], this.iMouse[2], this.iMouse[3] ]);
+      gl.uniform4fv(mouseUniform, [this.uniforms.iMouse.value[0], this.uniforms.iMouse.value[1], this.uniforms.iMouse.value[2], this.uniforms.iMouse.value[3] ]);
     }
     
-    if(builtInUniforms.iChannelResolution && builtInUniforms.iChannelResolution.isNeeded && this.texturesResolution.length > 0){
+    if(this.uniforms.iChannelResolution && this.uniforms.iChannelResolution.isNeeded){
       const channelResUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_CHANNELRESOLUTION
       );
-      gl.uniform3fv(channelResUniform, this.texturesResolution.flat());
+      gl.uniform3fv(channelResUniform, this.uniforms.iChannelResolution.value);
     }
 
-    if (builtInUniforms.iTime.isNeeded) {
+    if (this.uniforms.iTime.isNeeded) {
       const timeUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_TIME
@@ -491,7 +498,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.uniform1f(timeUniform, this.timer += delta );
     }
 
-    if (builtInUniforms.iTimeDelta.isNeeded) {
+    if (this.uniforms.iTimeDelta.isNeeded) {
       const timeDeltaUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_TIMEDELTA
@@ -499,7 +506,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.uniform1f(timeUniform, delta );
     }
 
-    if (builtInUniforms.iDate.isNeeded) {
+    if (this.uniforms.iDate.isNeeded) {
 
       const d= new Date() ;
       const month = d.getMonth() + 1; // the month (from 0-11)
@@ -507,7 +514,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       const year = d.getFullYear(); // the year (four digits)
       const time = d.getHours()*60.0*60 + d.getMinutes()*60 + d.getSeconds();
 
-      console.log(d, month, day, year, time);
+      // console.log(d, month, day, year, time);
     
       const dateUniform = gl.getUniformLocation(
         this.shaderProgram,
@@ -517,19 +524,19 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.uniform4fv(dateUniform, [year, month, day, time]);
     }
 
-    if (builtInUniforms.iFrame.isNeeded) {
+    if (this.uniforms.iFrame.isNeeded) {
       const timeDeltaUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_FRAME
       );
-      gl.uniform1f(timeUniform, this.frame++ );
+      gl.uniform1f(timeUniform, this.uniforms.iFrame.value++ );
     }
 
-    if (this.textures.length > 0) {
-      this.textures.forEach((texture: Texture, id: number) => {
+    if (this.texturesArr.length > 0) {
+      this.texturesArr.forEach((texture: Texture, id: number) => {
         const {isVideo, _webglTexture, source, flipY, isLoaded} = texture;
         if(!isLoaded) return;
-        if (builtInUniforms[`iChannel${id}`].isNeeded) {
+        if (this.uniforms[`iChannel${id}`].isNeeded) {
           const iChannel = gl.getUniformLocation(
             this.shaderProgram,
             `iChannel${id}`
@@ -554,16 +561,12 @@ export default class ShadertoyReact extends Component<Props, *> {
   animFrameId: AnimationFrameID;
   timeoutId: TimeoutID;
   canvas: HTMLCanvasElement;
-  pow2canvas: HTMLCanvasElement;
-  iMouse: Array<number> = [0, 0, 0, 0];
-  lastMouse: Array<number> = [0, 0];
   mousedown: boolean = false;
-  canvasPosition: Object = {};
+  canvasPosition: ClientRect;
   timer: number = 0;
-  textures: Array<WebGLTexture> = [];
-  texturesResolution: Array<> = [];
+  lastMouseArr: Array<number> = [0, 0];
+  texturesArr: Array<WebGLTexture> = [];
   lastTime: number = 0;
-  frame: number = 0;
 
   render = () => {
     const { style } = this.props;
