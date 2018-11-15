@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://"
+    "url": "https://github.com/mvilledieu/ShadertoyReact"
   },
   "author": "Morgan Villedieu <morgan.villedieu@gmail.com>",
   "license": "MIT",
