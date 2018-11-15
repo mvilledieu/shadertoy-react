@@ -7,9 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --mode development",
-    "transpile": "babel src -d dist --copy-files",
+    "transpile": "babel src -d package --copy-files --compact",
     "prepublishOnly": "npm run transpile",
-    "build": "webpack --mode production",
+    "build": "webpack --mode production --optimize-minimize",
     "deploy": "gh-pages -d examples/dist",
     "publish-demo": "npm run build && npm run deploy"
   },
@@ -39,5 +39,8 @@
   "peerDependencies": {
     "react": "^16.6.1",
     "react-dom": "^16.6.1"
+  },
+  "dependencies": {
+    "gh-pages": "^2.0.1"
   }
 }

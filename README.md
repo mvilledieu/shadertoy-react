@@ -1,5 +1,3 @@
-WIP WIP WIP WIP WIP
-
 Shadertoy React
 ==============
 
@@ -9,7 +7,20 @@ Simple react component letting you easily add shaders you've been building on Sh
 
 ### The way it works
 
-I tried to stay as close as possible to the Shadertoy implementation. Basically it uses a WebGL context on a `<canvas/>` and render a material on a full viewport 2D plane composed of 2 triangles. The canvas matches the size of the parent div by default. 
+I tried to stay as close as possible to the Shadertoy implementation. Basically it uses a WebGL context on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component.
+
+### React props
+
+Here are a few built in react props you can pass to your component. Feel free to suggest more.
+
+  * `textures` -- An array of textures objects following that structure `{url: ... , minFilter: , magFilter: , wrapS: ,wrapT: }` the format supported are (.jpg, .jpeg, .png, .bmp) for images, and (.mp4, .3gp, .webm, .ogv) for videos. 
+  * `devicePixelRatio` -- A value passed to set the [pixel density](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) of the canvas. By default 1.
+  * `fs` -- A string containing your fragment shader.
+  * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
+  * `contextOptions` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
+  * `onDoneLoadingTextures` -- Callback called once all textures are done being loaded, usefull when you want to wait for your shader to have all the needed texture before seeing it on screen. Using that callback you could for example simply fade the canvas in using css. 
+  * `lerp` -- A value in between 0 - 1 used to lerp the mouse position in your fragment shader.
+  
 
 ### Built in uniforms
 
@@ -38,9 +49,9 @@ Example of React Component using ShadertoyReact:
 		</Container>;
 	
 
-Example of shader : 
+Example of shader: 
 
-    void main(void) {
+    void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	    // Normalized pixel coordinates (from 0 to 1)
 	    vec2 uv = gl_FragCoord.xy/iResolution.xy;
 	    
@@ -57,13 +68,11 @@ Example of shader :
 * Add support for Cube texture.
 * Add the rest of Shadertoy built in uniforms.
 * Add support for WebGL2 and GLSL 3.0.
-* Add support for iChannelTime.
 * Add uniform for phone device orientation / gyroscope based effects.
-* Add props for optionnal mouse lerping.
 * Add support for custom uniforms.
 * Add support for keyboard uniforms / inputs.
+* Add support for iChannelTime.
+* ~~Add props for optionnal mouse lerping.~~
 * ~~Add support for iDate.~~
 * ~~Add support for video textures.~~
 * ~~Add support for iChannelResolution.~~
-
-WIP WIP WIP WIP WIP

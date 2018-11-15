@@ -74,7 +74,7 @@ type Props = {
   vs?: string,
   textures?: Array<TexturePropsType>,
   style?: string,
-  contextOptions?: Object,
+  contextAttributes?: Object,
   onDoneLoadingTextures?: Function,
   lerp?: number,
   devicePixelRatio?: number,
@@ -139,7 +139,7 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   static defaultProps = {
     textures: [],
-    contextOptions: { premultipliedAlpha: false, alpha: true },
+    contextAttributes: { premultipliedAlpha: false, alpha: true },
     devicePixelRatio: 1,
     vs: BASIC_VS,
   };
@@ -231,11 +231,11 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   initWebGL = () => {
-    const { contextOptions } = this.props;
+    const { contextAttributes } = this.props;
     // $FlowFixMe
     this.gl =
-      this.canvas.getContext('webgl', contextOptions) ||
-      this.canvas.getContext('experimental-webgl', contextOptions);
+      this.canvas.getContext('webgl', contextAttributes) ||
+      this.canvas.getContext('experimental-webgl', contextAttributes);
     // $FlowFixMe
     this.gl.getExtension('OES_standard_derivatives');
     // $FlowFixMe
