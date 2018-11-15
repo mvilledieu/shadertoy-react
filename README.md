@@ -37,11 +37,13 @@ Uniforms you can use in your shader.
 
 ### How to use it
 
-Example of React Component using ShadertoyReact:
+##Basic example: 
+
+#Example of the simplest React Component using ShadertoyReact:
 
     import React from  'react';
 	import { render} from  'react-dom';
-    import ShadertoyReact, { LinearFilter, NearestFilter, } from 'ShadertoyReact';
+    import ShadertoyReact from 'ShadertoyReact';
 
 	const ExampleApp = () =>
 		<Container>
@@ -49,7 +51,7 @@ Example of React Component using ShadertoyReact:
 		</Container>;
 	
 
-Example of shader: 
+#Example of shader: 
 
     void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	    // Normalized pixel coordinates (from 0 to 1)
@@ -61,6 +63,39 @@ Example of shader:
 	    // Output to screen
 	    gl_FragColor = vec4(col,1.0);
     }
+
+## Working with textures: 
+
+By default and for more advanced texture options, ShadertoyReact exports all the WebGL texture filtering constants and texture wrapping constants. 
+So you can easily import them in your code and make sure to pass the right one to your texture options. 
+
+    import ShadertoyReact, {
+        NearestFilter,
+        LinearFilter,
+        NearestMipMapNearestFilter,
+        LinearMipMapNearestFilter,
+        NearestMipMapLinearFilter,
+        LinearMipMapLinearFilter,
+        ClampToEdgeWrapping,
+        MirroredRepeatWrapping,
+        RepeatWrapping,
+    } from 'ShadertoyReact';
+
+#Example of usage of optionnal texture filtering: 
+    import React from  'react';
+	import { render} from  'react-dom';
+    import ShadertoyReact, { LinearFilter, RepeatWrapping } from 'ShadertoyReact';
+
+	const ExampleApp = () =>
+		<Container>
+			<ShadertoyReact 
+                fs={fs}
+                textures={[ 
+                    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
+                    { url: ... }
+                ]}
+            />
+		</Container>;
 
 ### What's next
 
