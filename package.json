@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "NPM module that creates a shadertoy like canvas",
   "main": "dist/index.js",
+  "homepage": "https://mvilledieu.github.io/ShadertoyReact/",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --mode development",
