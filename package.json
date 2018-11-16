@@ -7,9 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server --mode development",
-    "transpile": "npx babel src --out-file package/shadertoyreact.js",
-    "uglify": "uglifyjs package/index.js package/texture.js -o package/shadertoyreact.min.js -c -m",
-    "prepublishOnly": "npm run transpile",
+    "transpile": "npx babel src/Texture.js src/index.js --out-file lib/shadertoyreact.js",
+    "uglify": "uglifyjs lib/shadertoyreact.js -o lib/shadertoyreact.min.js -c -m",
+    "prepublishOnly": "rm -rf lib && mkdir lib && npm run transpile && npm run uglify",
     "build": "webpack --mode production --optimize-minimize",
     "deploy": "gh-pages -d examples/dist",
     "publish-demo": "npm run build && npm run deploy"
@@ -44,5 +44,12 @@
   "dependencies": {
     "gh-pages": "^2.0.1",
     "uglify-js": "^3.4.9"
-  }
+  },
+  "keywords": [
+    "shadertoy",
+    "shader",
+    "glsl",
+    "webgl",
+    "react"
+  ]
 }

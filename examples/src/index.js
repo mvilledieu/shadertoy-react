@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { render} from 'react-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import ShadertoyReact from '../../src';
+import ShadertoyReact from '../../lib/shadertoyreact.js';
 import fs from './shaders/fs';
 import fsImages from './shaders/fsImages';
 import mouse from './shaders/mouse';
