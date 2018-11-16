@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { render} from 'react-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import ShadertoyReact from '../../lib/shadertoyreact.js';
+import ShadertoyReact from '../../src/index.js';
 import fs from './shaders/fs';
 import fsImages from './shaders/fsImages';
 import mouse from './shaders/mouse';
@@ -66,13 +66,22 @@ class App extends Component {
                     fs={fsImages}
                     textures={[
                         {url: 'https://i.imgur.com/uIEexIc.jpg'},
-                        {url: 'https://i.imgur.com/OA5jUWi.jpg'},
                         {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
                     ]}
                     onDoneLoadingTextures={() =>{
                         this.setState({fadeIn: true});
                         console.log('onDoneLoadingTextures');
                     }}
+                    // uniforms={[
+                    //     { name: 'uTestFloat', type: 'float', value: 0.5 },
+                    //     { name: 'uTestVec2', type: 'vec2', value: [0, 1] },
+                    //     { name: 'uTestVec3', type: 'vec3', value: [0, 1, 3] },
+                    //     { name: 'uTestVec4', type: 'vec4', value: [0, 1, 3, 4] },
+                    //     { name: 'uTestInt', type: 'int', value: 1 },
+                    //     { name: 'uTestiVec2', type: 'ivec2', value: [0, 1] },
+                    //     { name: 'uTestiVec3', type: 'ivec3', value: [0, 1, 3] },
+                    //     { name: 'uTestiVec4', type: 'ivec4', value: [0, 1, 3, 4] },
+                    // ]}
                 />
             </Test1>
             <Test>  

@@ -69,6 +69,11 @@ type TexturePropsType = {
 };
 /* eslint-emable */
 
+type Uniform = {
+  type: string,
+  value: number | string,
+};
+
 type Props = {
   fs: string,
   vs?: string,
@@ -78,6 +83,7 @@ type Props = {
   onDoneLoadingTextures?: Function,
   lerp?: number,
   devicePixelRatio?: number,
+  uniforms?: Array<Uniform>,
 };
 
 type Shaders = {
@@ -134,7 +140,6 @@ export default class ShadertoyReact extends Component<Props, *> {
         value: 0,
       },
     };
-    
   }
 
   static defaultProps = {
@@ -165,7 +170,7 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.uniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
           type: 'vec3',
           isNeeded: false,
-          arraySize: `[${textures.length - 1}]`,
+          arraySize: `[${textures.length}]`,
           value: [],
         };
 
@@ -176,6 +181,7 @@ export default class ShadertoyReact extends Component<Props, *> {
             isNeeded: false,
           }; // Dynamically add textures uniforms
 
+          this.setupChannelRes(texture, id); // initialize array with 0s
           this.texturesArr[id] = new Texture(gl);
           return this.texturesArr[id]
                   .load(texture, id)
@@ -210,8 +216,8 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.deleteProgram(this.shaderProgram);
 
       if (this.texturesArr.length > 0) {
-        this.texturesArr.forEach((texture) => {
-          gl.deleteTexture(texture.webglTexture);
+        this.texturesArr.forEach((texture: Texture) => {
+          gl.deleteTexture(texture._webglTexture);
         });
       }
 
@@ -227,7 +233,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     this.uniforms.iChannelResolution.value[id * 3] = width;
     this.uniforms.iChannelResolution.value[id * 3 + 1] = height;
     this.uniforms.iChannelResolution.value[id * 3 + 2] = 0;
-    // console.log(this.uniforms.iChannelResolution);
+    // console.log(this.uniforms);
   }
 
   initWebGL = () => {
@@ -508,19 +514,17 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     if (this.uniforms.iDate.isNeeded) {
 
-      const d= new Date() ;
-      const month = d.getMonth() + 1; // the month (from 0-11)
-      const day = d.getDate() ; // the day of the month (from 1-31)
-      const year = d.getFullYear(); // the year (four digits)
-      const time = d.getHours()*60.0*60 + d.getMinutes()*60 + d.getSeconds();
+      const d = new Date();
+      const month = d.getMonth() + 1;
+      const day = d.getDate() ;
+      const year = d.getFullYear();
+      const time = d.getHours() * 60 * 60 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() * 0.001;
 
-      // console.log(d, month, day, year, time);
-    
       const dateUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_DATE
       );
-      
+
       gl.uniform4fv(dateUniform, [year, month, day, time]);
     }
 

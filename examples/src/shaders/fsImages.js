@@ -2,9 +2,8 @@ export default `
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec2 uv = fragCoord / iResolution.xy;
-    vec4 text = texture(iChannel0, uv + sin(iTime));
-    vec4 text1 = texture(iChannel1, uv + text.rg);
-    vec4 text2 = texture(iChannel2, uv + (fragCoord/iChannelResolution[0].xy));
+    vec4 text = texture(iChannel0, fragCoord/iChannelResolution[0].xy + vec2(0., iTime * 0.1));
+    vec4 text1 = texture(iChannel1, fragCoord/iChannelResolution[1].xy);
 
-    fragColor = mix(mix(text, text1, 0.8), text2, sin(iTime));
+    fragColor = mix(text, text1, abs(sin(iTime)));
 }`;

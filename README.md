@@ -9,7 +9,7 @@ Simple react component letting you easily add shaders you've been building on Sh
 
 Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component.
 
-## React props
+## ShaderReact component available props
 
 Here are a few built in react props you can pass to your component. Feel free to suggest more.
 
@@ -99,14 +99,14 @@ By default and for more advanced texture options, `ShadertoyReact` exports all t
             />
 		</Container>;
 
-## What's next
+## What's next ordered by priority
 
+* Add support for custom uniforms.
+* Add support for Data texture.
+* Add support for WebGL2 and GLSL 3.0.
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
-* Add the rest of Shadertoy built in uniforms.
-* Add support for WebGL2 and GLSL 3.0.
-* Add uniform for phone device orientation / gyroscope based effects.
-* Add support for custom uniforms.
+* Add built in uniform for phone device orientation / gyroscope based effects.
 * Add support for keyboard uniforms / inputs.
 * Add support for iChannelTime.
 * ~~Add props for optionnal mouse lerping.~~
