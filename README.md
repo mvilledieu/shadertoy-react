@@ -104,6 +104,7 @@ By default and for more advanced texture options, `ShadertoyReact` exports all t
 * Add support for custom uniforms.
 * Add support for Data texture.
 * Add support for WebGL2 and GLSL 3.0.
+* Add support for classic syntax (void main(void)) etc.
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
 * Add built in uniform for phone device orientation / gyroscope based effects.
