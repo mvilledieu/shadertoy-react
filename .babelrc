@@ -2,10 +2,7 @@
     "presets": [
         "@babel/preset-flow",
         "@babel/react",
-        ["@babel/preset-env",
-        {
-            "modules":"amd"
-        }]
+        "@babel/preset-env",
     ],
     "plugins": [
         "@babel/plugin-proposal-class-properties",

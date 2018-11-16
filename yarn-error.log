@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/Cellar/node/11.1.0/bin/node /usr/local/Cellar/yarn/1.12.1/libexec/bin/yarn.js uglify
+  /usr/local/Cellar/node/11.1.0/bin/node /usr/local/Cellar/yarn/1.12.1/libexec/bin/yarn.js add --dev UglifyJsPlugin
 
 PATH: 
   /Users/mvilledieu/.pyenv/shims:/Users/mvilledieu/.pyenv:/Users/mvilledieu/go/bin:/usr/local/Cellar/go/1.10.1/bin:/Library/Frameworks/Python.framework/Versions/3.6/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Applications/VMware Fusion.app/Contents/Public:/usr/local/share/dotnet:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Xamarin Workbooks.app/Contents/SharedSupport/path-bin:/Users/mvilledieu/.pyenv/shims:/Users/mvilledieu/.pyenv:/Users/mvilledieu/go/bin:/usr/local/Cellar/go/1.10.1/bin:/Library/Frameworks/Python.framework/Versions/3.6/bin:/Users/mvilledieu/Library/Python/2.7/bin:/Users/mvilledieu/Library/Python/2.7/bin
@@ -14,27 +14,31 @@ Platform:
   darwin x64
 
 Trace: 
-  SyntaxError: /Users/mvilledieu/Sites/npm/ShadertoyReact/package.json: Unexpected token   in JSON at position 462
-      at JSON.parse (<anonymous>)
-      at /usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:1166:59
-      at Generator.next (<anonymous>)
-      at step (/usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:92:30)
-      at /usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:103:13
+  Error: https://nexus.magicleap.blue/repository/npm-group/UglifyJsPlugin: Not found
+      at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:63139:18)
+      at Request.self.callback (/usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:124547:22)
+      at Request.emit (events.js:182:13)
+      at Request.<anonymous> (/usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:125519:10)
+      at Request.emit (events.js:182:13)
+      at IncomingMessage.<anonymous> (/usr/local/Cellar/yarn/1.12.1/libexec/lib/cli.js:125441:12)
+      at Object.onceWrapper (events.js:273:13)
+      at IncomingMessage.emit (events.js:187:15)
+      at endReadableNT (_stream_readable.js:1094:12)
+      at process.internalTickCallback (internal/process/next_tick.js:72:19)
 
 npm manifest: 
   {
     "name": "shadertoyreact",
     "version": "1.0.0",
-    "description": "NPM module that creates a shadertoy like canvas",
+    "description": "React component that let's you easily render a shader on a canvas by simply passing a fragment shader, following the shadertoy syntax, and logic, so you don't have to worry about passing basic uniforms, or setting up the webgl scene to do that, all the work is being done for you.",
     "main": "dist/index.js",
     "homepage": "https://mvilledieu.github.io/ShadertoyReact/",
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
-      "start": "webpack-dev-server --mode development",
-      "transpile": "babel src -d package --copy-files --compact",
-      "uglify": "uglifyjs package/index.js package/texture.js \ -o package/shadertoyreact.min.js -c -m \",
-      "prepublishOnly": "npm run transpile",
-      "build": "webpack --mode production --optimize-minimize",
+      "start": "webpack-dev-server --mode development --config webpack.common.js",
+      "transpile": "webpack --mode production --config webpack.lib.js",
+      "prepublishOnly": "rm -rf lib && mkdir lib && npm run transpile",
+      "build": "webpack --mode production --config webpack.common.js",
       "deploy": "gh-pages -d examples/dist",
       "publish-demo": "npm run build && npm run deploy"
     },
@@ -68,7 +72,14 @@ npm manifest:
     "dependencies": {
       "gh-pages": "^2.0.1",
       "uglify-js": "^3.4.9"
-    }
+    },
+    "keywords": [
+      "shadertoy",
+      "shader",
+      "glsl",
+      "webgl",
+      "react"
+    ]
   }
 
 yarn manifest: 
