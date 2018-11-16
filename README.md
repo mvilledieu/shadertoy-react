@@ -5,11 +5,11 @@ Simple react component letting you easily add shaders you've been building on Sh
 
  Can be really usefull when you want to add some interactive pieces in your web page or even just replace static images by interactive/generative shader.
 
-### The way it works
+## The way it works
 
 Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component.
 
-### React props
+## React props
 
 Here are a few built in react props you can pass to your component. Feel free to suggest more.
 
@@ -22,7 +22,7 @@ Here are a few built in react props you can pass to your component. Feel free to
   * `lerp` -- A value in between 0 - 1 used to lerp the mouse position in your fragment shader.
   
 
-### Built in uniforms
+## Built in uniforms
 
 Uniforms you can use in your shader.
 
@@ -35,11 +35,11 @@ Uniforms you can use in your shader.
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
   * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
 
-### How to use it
+## How to use it
 
-## Basic example: 
+### Basic example: 
 
-# Example of the simplest React Component using ShadertoyReact:
+#### Example of the simplest React Component using ShadertoyReact:
 
     import React from  'react';
 	import { render} from  'react-dom';
@@ -51,7 +51,7 @@ Uniforms you can use in your shader.
 		</Container>;
 	
 
-# Example of shader: 
+#### Example of shader: 
 
     void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	    // Normalized pixel coordinates (from 0 to 1)
@@ -64,7 +64,7 @@ Uniforms you can use in your shader.
 	    gl_FragColor = vec4(col,1.0);
     }
 
-## Working with textures: 
+#### Working with textures: 
 
 By default and for more advanced texture options, `ShadertoyReact` exports all the WebGL texture filtering constants and texture wrapping constants. So you can easily import them in your code and make sure to pass the right one to your texture options. 
 
@@ -99,7 +99,7 @@ By default and for more advanced texture options, `ShadertoyReact` exports all t
             />
 		</Container>;
 
-### What's next
+## What's next
 
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
