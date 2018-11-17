@@ -6,6 +6,7 @@ import fs from './shaders/fs';
 import fsImages from './shaders/fsImages';
 import mouse from './shaders/mouse';
 import clock from './shaders/clock';
+import deviceorientation from './shaders/deviceorientation.js';
 
 const GlobalStyle = createGlobalStyle`
     body, html {
@@ -13,6 +14,7 @@ const GlobalStyle = createGlobalStyle`
         height: 100%;
         margin: 0;
         padding: 0;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
     }
 `;
 
@@ -64,6 +66,7 @@ class App extends Component {
             <Test1 fadeIn={this.state.fadeIn}>
                 <ShadertoyReact 
                     fs={fsImages}
+                    devicePixelRatio={0.2}
                     textures={[
                         {url: 'https://i.imgur.com/uIEexIc.jpg'},
                         {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
@@ -91,7 +94,7 @@ class App extends Component {
                 <ShadertoyReact fs={clock}/>
             </Test>  
             <Test>  
-                <ShadertoyReact fs={fs}/>
+                <ShadertoyReact fs={deviceorientation}/>
             </Test>
             <Test>  
                 <ShadertoyReact fs={fs}/>

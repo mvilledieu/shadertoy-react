@@ -11,6 +11,7 @@ import Texture, {
   MirroredRepeatWrapping,
   RepeatWrapping,
 } from './Texture';
+import { getRotationMatrix } from './getRotationMatrix';
 
 export {
   NearestFilter,
@@ -49,6 +50,7 @@ void main(void) {
     gl_Position = vec4(aVertexPosition, 1.0);
 }`;
 
+// Shadertoy built-in uniforms
 const UNIFORM_TIME = 'iTime';
 const UNIFORM_TIMEDELTA = 'iTimeDelta';
 const UNIFORM_DATE = 'iDate';
@@ -57,6 +59,11 @@ const UNIFORM_MOUSE = 'iMouse';
 const UNIFORM_RESOLUTION = 'iResolution';
 const UNIFORM_CHANNEL = 'iChannel';
 const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
+
+// Uniforms not built-int in shadertoy
+const UNIFORM_DEVICEORIENTATION = 'iDeviceOrientation';
+
+const RAD = Math.PI / 180;
 
 /* eslint-disable */
 type TexturePropsType = {
@@ -138,6 +145,15 @@ export default class ShadertoyReact extends Component<Props, *> {
         type: 'int',
         isNeeded: false,
         value: 0,
+      },
+      [UNIFORM_DEVICEORIENTATION]: {
+        type: 'mat3',
+        isNeeded: false,
+        value: [
+          0, 0, 0, 
+          0, 0, 0,
+          0, 0, 0
+        ],
       },
     };
   }
@@ -230,8 +246,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   setupChannelRes = ({width, height}: Texture, id: number) => {
-    this.uniforms.iChannelResolution.value[id * 3] = width;
-    this.uniforms.iChannelResolution.value[id * 3 + 1] = height;
+    const { devicePixelRatio = 1 } = this.props;
+    this.uniforms.iChannelResolution.value[id * 3] = width * devicePixelRatio;
+    this.uniforms.iChannelResolution.value[id * 3 + 1] = height * devicePixelRatio;
     this.uniforms.iChannelResolution.value[id * 3 + 2] = 0;
     // console.log(this.uniforms);
   }
@@ -270,38 +287,60 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   addEventListeners = () => {
-    if (this.uniforms.iMouse.isNeeded) {
-      this.canvas.addEventListener('mousemove', this.mouseMove);
-      this.canvas.addEventListener('mouseout', this.mouseUp);
-      this.canvas.addEventListener('mouseup', this.mouseUp);
-      this.canvas.addEventListener('mousedown', this.mouseDown);
+    const options = { passive: true };
 
-      this.canvas.addEventListener('touchmove', this.mouseMove);
-      this.canvas.addEventListener('touchend', this.mouseUp);
+    if (this.uniforms.iMouse.isNeeded) {
+      this.canvas.addEventListener('mousemove', this.mouseMove, options);
+      this.canvas.addEventListener('mouseout', this.mouseUp, options);
+      this.canvas.addEventListener('mouseup', this.mouseUp, options);
+      this.canvas.addEventListener('mousedown', this.mouseDown, options);
+
+      this.canvas.addEventListener('touchmove', this.mouseMove, options);
+      this.canvas.addEventListener('touchend', this.mouseUp, options);
+      this.canvas.addEventListener('touchstart', this.mouseDown, options);
     }
 
-    window.addEventListener('resize', this.onResize, { passive: true });
+    // if(this.uniforms.iDeviceOrientation.isNeeded) {
+      window.addEventListener("deviceorientation", this.onDeviceOrientationChange, options);
+    // }
+
+    window.addEventListener('resize', this.onResize, options);
   };
 
   removeEventListeners = () => {
-    if (this.uniforms.iMouse.isNeeded) {
-      this.canvas.removeEventListener('mousemove', this.mouseMove);
-      this.canvas.removeEventListener('mouseout', this.mouseUp);
-      this.canvas.removeEventListener('mouseup', this.mouseUp);
-      this.canvas.removeEventListener('mousedown', this.mouseDown);
+    const options = { passive: true };
 
-      this.canvas.removeEventListener('touchmove', this.mouseMove);
-      this.canvas.removeEventListener('touchend', this.mouseUp);
+    if (this.uniforms.iMouse.isNeeded) {
+      this.canvas.removeEventListener('mousemove', this.mouseMove, options);
+      this.canvas.removeEventListener('mouseout', this.mouseUp, options);
+      this.canvas.removeEventListener('mouseup', this.mouseUp, options);
+      this.canvas.removeEventListener('mousedown', this.mouseDown, options);
+
+      this.canvas.removeEventListener('touchmove', this.mouseMove, options);
+      this.canvas.removeEventListener('touchend', this.mouseUp, options);
+      this.canvas.removeEventListener('touchstart', this.mouseDown, options);  
+    }
+
+    if(this.uniforms.iDeviceOrientation.isNeeded) {
+      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, passive);
     }
 
     window.removeEventListener('resize', this.onResize, { passive: true });
   };
 
+  onDeviceOrientationChange = e => {
+    const mat = getRotationMatrix(e.alpha, -e.beta, -e.gamma);
+    this.uniforms.iDeviceOrientation.value = mat;
+  }
+
   mouseDown = e => {
     this.canvasPosition = this.canvas.getBoundingClientRect();
 
-    let mouseX = (e.clientX || e.touches[0].clientX) - this.canvasPosition.left;
-    let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
+    const clientX = e.clientX || e.changedTouches[0].clientX;
+    const clientY = e.clientY || e.changedTouches[0].clientY;
+
+    let mouseX = clientX - this.canvasPosition.left;
+    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
 
     this.mousedown = true;
     this.uniforms.iMouse.value[2] = mouseX;
@@ -313,10 +352,12 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   mouseMove = e => {
     const { lerp = 1 } = this.props;
-    if (!this.mousedown) return;
+
+    const clientX = e.clientX || e.changedTouches[0].clientX;
+    const clientY = e.clientY || e.changedTouches[0].clientY;
     
-    let mouseX = (e.clientX || e.touches[0].clientX) - this.canvasPosition.left;
-    let mouseY = (this.canvasPosition.height - (e.clientY || e.touches[0].clientY)) - this.canvasPosition.top;
+    let mouseX = clientX - this.canvasPosition.left;
+    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
 
     if(lerp !== 1){
       this.lastMouseArr[0] = mouseX;
@@ -328,7 +369,6 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   mouseUp = e => {
-    this.mousedown = false;
     this.uniforms.iMouse.value[2] = 0;
     this.uniforms.iMouse.value[3] = 0;
   }
@@ -485,7 +525,7 @@ export default class ShadertoyReact extends Component<Props, *> {
         UNIFORM_MOUSE
       );
       // $FlowFixMe
-      gl.uniform4fv(mouseUniform, [this.uniforms.iMouse.value[0], this.uniforms.iMouse.value[1], this.uniforms.iMouse.value[2], this.uniforms.iMouse.value[3] ]);
+      gl.uniform4fv(mouseUniform, this.uniforms.iMouse.value);
     }
     
     if(this.uniforms.iChannelResolution && this.uniforms.iChannelResolution.isNeeded){
@@ -494,6 +534,14 @@ export default class ShadertoyReact extends Component<Props, *> {
         UNIFORM_CHANNELRESOLUTION
       );
       gl.uniform3fv(channelResUniform, this.uniforms.iChannelResolution.value);
+    }
+
+    if(this.uniforms.iDeviceOrientation.isNeeded){
+      const deviceOrientationUniform = gl.getUniformLocation(
+        this.shaderProgram,
+        UNIFORM_DEVICEORIENTATION
+      );
+      gl.uniformMatrix3fv(deviceOrientationUniform, false, this.uniforms.iDeviceOrientation.value);
     }
 
     if (this.uniforms.iTime.isNeeded) {
