@@ -101,6 +101,7 @@ By default and for more advanced texture options, `ShadertoyReact` exports all t
 
 ## What's next ordered by priority
 
+* Add camera feed as a texture.
 * Add support for custom uniforms.
 * Add support for Data texture.
 * Add support for WebGL2 and GLSL 3.0.
