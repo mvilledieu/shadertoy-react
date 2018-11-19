@@ -11,8 +11,10 @@
     "prepublishOnly": "rm -rf lib && mkdir lib && npm run transpile",
     "build": "webpack --mode production --config webpack.common.js",
     "deploy": "gh-pages -d examples/dist",
-    "publish-demo": "npm run build && npm run deploy"
+    "publish-demo": "npm run build && npm run deploy",
+    "publish-npm": "npm run prepublishOnly && npm publish --registry https://registry.npmjs.org"
   },
+  "publishConfig":{"registry":"https://registry.npmjs.org"},
   "repository": {
     "type": "git",
     "url": "https://github.com/mvilledieu/shadertoy-react"
