@@ -24,7 +24,9 @@ Here are a few built in react props you can pass to your component. Feel free to
 
 ## Built in uniforms
 
-Uniforms you can use in your shader.
+Built in uniforms you can use in your shader.
+
+Shadertoy Built in: 
 
   * `uniform float iTime` -- shader playback time (in seconds).
   * `uniform float iTimeDelta` -- Render time (in seconds).
@@ -34,6 +36,10 @@ Uniforms you can use in your shader.
   * `uniform vec4 iMouse` -- mouse pixel coords. xy: current (if MLB down), zw: click.
   * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
   * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
+
+Specific to this component:
+
+  * `uniform vec4 iDeviceOrientation` -- Raw data from [device orientation](https://developer.mozilla.org/en-US/docs/Web/API/Detecting_device_orientation) where respectively x: Alpha, y: Beta, z: Gamma and w: [window.orientation](https://developer.mozilla.org/en-US/docs/Web/API/Window/orientation).
 
 ## How to use it
 

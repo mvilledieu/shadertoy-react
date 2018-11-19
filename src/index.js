@@ -11,7 +11,6 @@ import Texture, {
   MirroredRepeatWrapping,
   RepeatWrapping,
 } from './Texture';
-import { getRotationMatrix } from './getRotationMatrix';
 
 export {
   NearestFilter,
@@ -147,13 +146,9 @@ export default class ShadertoyReact extends Component<Props, *> {
         value: 0,
       },
       [UNIFORM_DEVICEORIENTATION]: {
-        type: 'mat3',
+        type: 'vec4',
         isNeeded: false,
-        value: [
-          0, 0, 0, 
-          0, 0, 0,
-          0, 0, 0
-        ],
+        value: [0, 0, 0, 0],
       },
     };
   }
@@ -328,9 +323,8 @@ export default class ShadertoyReact extends Component<Props, *> {
     window.removeEventListener('resize', this.onResize, { passive: true });
   };
 
-  onDeviceOrientationChange = e => {
-    const mat = getRotationMatrix(e.alpha, -e.beta, -e.gamma);
-    this.uniforms.iDeviceOrientation.value = mat;
+  onDeviceOrientationChange = ({alpha, beta, gamma}) => {
+    this.uniforms.iDeviceOrientation.value = [alpha, beta, gamma, window.orientation || 0 ];
   }
 
   mouseDown = e => {
@@ -541,7 +535,7 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.shaderProgram,
         UNIFORM_DEVICEORIENTATION
       );
-      gl.uniformMatrix3fv(deviceOrientationUniform, false, this.uniforms.iDeviceOrientation.value);
+      gl.uniform4fv(deviceOrientationUniform, this.uniforms.iDeviceOrientation.value);
     }
 
     if (this.uniforms.iTime.isNeeded) {
