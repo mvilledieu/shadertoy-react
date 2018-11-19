@@ -5,6 +5,7 @@ export default `
 // from https://www.shadertoy.com/view/XlXBRn
 
 // helper converting your euler values to a rotation matrix.
+// code ported over to glsl from https://dev.opera.com/articles/w3c-device-orientation-usage/
 mat3 getBaseRotationMatrix( vec3 euler ) {
     float _x = euler.y * DEGTORAD;
     float _y = euler.z * DEGTORAD;
@@ -98,7 +99,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 ray = normalize(vec3(uv,1.)) * finalMatrix; //Multiply the raydirection by our device rotation matrix.
     
     //vec3 ori = vec3(0.,0.,-3.);
-    vec3 ori = vec3(0.,0., 0.);
+    vec3 ori = vec3(0., 0., iTime * 2.);
     float t = trace(ori, ray);
     
     float fog = 1.0/(1.0+t*t*0.1);
