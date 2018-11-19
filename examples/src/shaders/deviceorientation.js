@@ -87,6 +87,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     uv = uv*2. -1.;
     uv.x *= iResolution.x/iResolution.y;
 
+    //code ported over to glsl from https://dev.opera.com/articles/w3c-device-orientation-usage/
     mat3 rotationMatrix = getBaseRotationMatrix(vec3(iDeviceOrientation.x, -iDeviceOrientation.y, -iDeviceOrientation.z)); // R
 	//mat3 screenTransform = getScreenTransformationMatrix( iDeviceOrientation.w ); // r_s
     //mat3 screenAdjustedMatrix = rotationMatrix * screenTransform; // R_s
@@ -94,7 +95,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	mat3 worldTransform = getWorldTransformationMatrix(); // r_w
     mat3 finalMatrix = screenAdjustedMatrix * worldTransform; // R_w
     
-    vec3 ray = normalize(vec3(uv,1.)) * finalMatrix;
+    vec3 ray = normalize(vec3(uv,1.)) * finalMatrix; //Multiply the raydirection by our device rotation matrix.
     
     //vec3 ori = vec3(0.,0.,-3.);
     vec3 ori = vec3(0.,0., 0.);
