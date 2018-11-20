@@ -1,6 +1,5 @@
 export default `// Created by inigo quilez - iq/2013
 
-
 // An example showing how to use the keyboard input.
 //
 // Row 0: contain the current state of the 256 keys. 
@@ -8,7 +7,6 @@ export default `// Created by inigo quilez - iq/2013
 // Row 2: contains a toggle for every key.
 //
 // Texel positions correspond to ASCII codes. Press arrow keys to test.
-
 
 // See also:
 //
@@ -20,7 +18,6 @@ export default `// Created by inigo quilez - iq/2013
 // Input - Time        : https://www.shadertoy.com/view/lsXGz8
 // Input - TimeDelta   : https://www.shadertoy.com/view/lsKGWV
 // Inout - 3D Texture  : https://www.shadertoy.com/view/4llcR4
-
 
 const int KEY_LEFT  = 37;
 const int KEY_UP    = 38;

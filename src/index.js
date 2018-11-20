@@ -295,9 +295,9 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.addEventListener('touchstart', this.mouseDown, options);
     }
 
-    // if(this.uniforms.iDeviceOrientation.isNeeded) {
+    if(this.uniforms.iDeviceOrientation.isNeeded) {
       window.addEventListener("deviceorientation", this.onDeviceOrientationChange, options);
-    // }
+    }
 
     window.addEventListener('resize', this.onResize, options);
   };
