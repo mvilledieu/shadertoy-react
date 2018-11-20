@@ -465,12 +465,14 @@ export default class ShadertoyReact extends Component<Props, *> {
     if(uniforms) {
         Object.keys(uniforms).forEach( (name: string, id: number) => {
         const type = uniformTypeToGLSLType(uniforms[name].type);
+        if(!type) return;
         customUniforms = {
           ...customUniforms,
           [name]: {
             type,
             isNeeded: false,
             value: uniforms[name].value,
+            ...( (uniforms[name].type.includes('v') && uniforms[name].value.length > uniforms[name].type.charAt(0) ) && { arraySize: `[${ Math.floor(uniforms[name].value.length / uniforms[name].type.charAt(0))  }]`} )
           }
         }
       });

@@ -80,7 +80,8 @@ class App extends Component {
                         {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
                     ]}
                     uniforms={{
-                        uTest : { type: '2f', value: [this.state.val, 0.2] },
+                        uTest : { type: '2fv', value: [this.state.val, 1., 2., 2.] },
+                        uTest2 : { type: '2f', value: [this.state.val, 1.] },
                     }}
                     onDoneLoadingTextures={() =>{
                         this.setState({fadeIn: true});
