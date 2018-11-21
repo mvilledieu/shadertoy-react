@@ -69,7 +69,6 @@ class App extends Component {
     }
 
     render(){
-        console.log(this.state.val);
         return <Container>
             <Test1 fadeIn={this.state.fadeIn}>
                 <ShadertoyReact 
@@ -79,10 +78,6 @@ class App extends Component {
                         {url: 'https://i.imgur.com/uIEexIc.jpg'},
                         {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
                     ]}
-                    uniforms={{
-                        uTest : { type: '2fv', value: [this.state.val, 1., 2., 2.] },
-                        uTest2 : { type: '2f', value: [this.state.val, 1.] },
-                    }}
                     onDoneLoadingTextures={() =>{
                         this.setState({fadeIn: true});
                         console.log('onDoneLoadingTextures');
@@ -99,7 +94,15 @@ class App extends Component {
                 <ShadertoyReact fs={deviceorientation}/>
             </Test>
             <Test>  
-                <ShadertoyReact fs={fs}/>
+                <ShadertoyReact 
+                    fs={fs}
+                    uniforms={{
+                        uTest : { type: '2fv', value: [this.state.val, 1., 2., 2.] },
+                        uTest2 : { type: '2f', value: [this.state.val, 1.] },
+                        uTest5 : { type: '4fv', value: [this.state.val, 1., this.state.val, this.state.val] },
+                        uTest5 : { type: 'Matrix2fv', value: [this.state.val, 1., this.state.val, this.state.val] },
+                    }}
+                />
             </Test>
             <Test>  
                 <ShadertoyReact fs={fs}/>

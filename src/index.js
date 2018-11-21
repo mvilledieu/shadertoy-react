@@ -64,8 +64,6 @@ const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
 // Uniforms not built-int in shadertoy
 const UNIFORM_DEVICEORIENTATION = 'iDeviceOrientation';
 
-const RAD = Math.PI / 180;
-
 /* eslint-disable */
 type TexturePropsType = {
   url: string,
@@ -79,19 +77,19 @@ type TexturePropsType = {
 
 type Uniform = {
   type: string,
-  value: number | string,
+  value: number | Array<number>,
 };
 
 type Props = {
   fs: string,
   vs?: string,
   textures?: Array<TexturePropsType>,
+  uniforms?: Array<Uniform>,
   style?: string,
   contextAttributes?: Object,
   onDoneLoadingTextures?: Function,
   lerp?: number,
   devicePixelRatio?: number,
-  uniforms?: Array<Uniform>,
 };
 
 type Shaders = {
@@ -166,7 +164,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   componentDidMount = () => {
     this.initWebGL();
 
-    const { fs, vs, textures, onDoneLoadingTextures } = this.props;
+    const { fs, vs } = this.props;
     const { gl } = this;
 
     if (gl) {
@@ -291,10 +289,10 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
 
     if(this.uniforms.iDeviceOrientation.isNeeded) {
-      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, passive);
+      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, options);
     }
 
-    window.removeEventListener('resize', this.onResize, { passive: true });
+    window.removeEventListener('resize', this.onResize, options);
   };
 
   onDeviceOrientationChange = ({alpha, beta, gamma}) => {
@@ -302,7 +300,6 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   mouseDown = e => {
-
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
@@ -461,30 +458,34 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   processCustomUniforms = () => {
     const { uniforms } = this.props;
-    let customUniforms = {};
     if(uniforms) {
-        Object.keys(uniforms).forEach( (name: string, id: number) => {
-        const type = uniformTypeToGLSLType(uniforms[name].type);
-        if(!type) return;
-        customUniforms = {
-          ...customUniforms,
-          [name]: {
-            type,
-            isNeeded: false,
-            value: uniforms[name].value,
-            ...( (uniforms[name].type.includes('v') && uniforms[name].value.length > uniforms[name].type.charAt(0) ) && { arraySize: `[${ Math.floor(uniforms[name].value.length / uniforms[name].type.charAt(0))  }]`} )
+      Object.keys(uniforms).forEach( (name: string, id: number) => {
+
+        const { value, type } = this.props.uniforms[name];
+
+        const glslType = uniformTypeToGLSLType(type);
+        if(!glslType) return; // If the type specified doesn't exist
+
+        let tempObject = {};
+        if(type.includes('Matrix')){
+          const arrayLength = type.length;
+          const val = type.charAt(arrayLength - 3);
+          const numberOfMatrices = Math.floor(value.length / (val * val));
+          if(value.length > (val * val)) {
+            tempObject.arraySize = `[${numberOfMatrices}]`;
           }
+        } else if (type.includes('v') && value.length > type.charAt(0)) {
+          tempObject.arraySize = `[${ Math.floor(value.length /  type.charAt(0))  }]`;
+        }
+
+        this.uniforms[name] = {
+            type: glslType,
+            isNeeded: false,
+            value,
+            ...tempObject,
         }
       });
     }
-
-    this.uniforms = {
-      ...this.uniforms,
-      ...customUniforms,
-    };
-
-
-    console.log(this.uniforms);
   }
 
   processTextures = () => {
@@ -501,7 +502,6 @@ export default class ShadertoyReact extends Component<Props, *> {
       };
 
       const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
-
         this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
           type: 'sampler2D',
           isNeeded: false,
@@ -515,7 +515,9 @@ export default class ShadertoyReact extends Component<Props, *> {
       });
 
       Promise.all(texturePromisesArr)
-        .then(() => {
+        .then(() => onDoneLoadingTextures && onDoneLoadingTextures() )
+        .catch(() => {
+          console.error('ShadertoyReact: problem encountered while loading textures');
           if (onDoneLoadingTextures) onDoneLoadingTextures();
         });
     } else {
@@ -546,7 +548,6 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   setUniforms = (timestamp: number) => {
-
     const { gl } = this;
     
     let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
@@ -555,12 +556,14 @@ export default class ShadertoyReact extends Component<Props, *> {
     if(this.props.uniforms){
       Object.keys(this.props.uniforms).forEach(
         name => {
-          const customUniformLocation = gl.getUniformLocation(
-            this.shaderProgram, 
-            name
-          );
-          
-          processUniform(gl, customUniformLocation, this.props.uniforms[name].type, this.props.uniforms[name].value );
+          const currentUniform = this.props.uniforms[name];
+          if(currentUniform.isNeeded){
+            const customUniformLocation = gl.getUniformLocation(
+              this.shaderProgram, 
+              name
+            );  
+            processUniform(gl, customUniformLocation, currentUniform.type, currentUniform.value);
+          }
         }
       );
     }
