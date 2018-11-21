@@ -1,6 +1,11 @@
 shadertoy-react
 ==============
 
+[![npm version](https://badge.fury.io/js/shadertoy-react.svg)](https://badge.fury.io/js/shadertoy-react)
+[![Build Size][build-size]][build-size-url]
+
+#### Shadertoy like React Component ####
+
 Small react component letting you easily add shaders you've been building on Shadertoy to your React page. I found myself using Shadertoy most of the time when I needed to create some shader for projects, since the live reload functionnality makes it really easy to start working on the visual quickly. 
 
  Can be really usefull when you want to add some interactive pieces in your web page or even just replace static images by interactive/generative shader.
@@ -9,7 +14,37 @@ Small react component letting you easily add shaders you've been building on Sha
 
 Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component. It is also making sure that anything that is not used in your shader is not being processed in the JS side to avoid useless event listeners, etc. so if you don't use the `iMouse` uniform the mouse event listener will not be activatted and the `iMouse` will not be added and passed to your shader.
 
-## shadertoy-react component available props
+## How to use it
+
+### Basic example: 
+
+Example of the simplest React Component using `shadertoy-react`:
+```javascript
+    import React from  'react';
+	import { render} from  'react-dom';
+    import ShadertoyReact from 'shadertoy-react';
+
+	const ExampleApp = () =>
+		<Container>
+			<ShadertoyReact fs={fs}/>
+		</Container>;
+```	
+
+Example of basic shader: 
+```c
+    void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+	    // Normalized pixel coordinates (from 0 to 1)
+	    vec2 uv = gl_FragCoord.xy/iResolution.xy;
+	    
+	    // Time varying pixel color
+	    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+	    
+	    // Output to screen
+	    gl_FragColor = vec4(col,1.0);
+    }
+```
+
+## Available props
 
 Here are a few built in react props you can pass to your component. Feel free to suggest more.
 
@@ -104,35 +139,6 @@ Example of shader you could write using these custom uniforms:
     }
 ```
   
-## How to use it
-
-### Basic example: 
-
-Example of the simplest React Component using `shadertoy-react`:
-```javascript
-    import React from  'react';
-	import { render} from  'react-dom';
-    import ShadertoyReact from 'shadertoy-react';
-
-	const ExampleApp = () =>
-		<Container>
-			<ShadertoyReact fs={fs}/>
-		</Container>;
-```	
-
-Example of basic shader: 
-```c
-    void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-	    // Normalized pixel coordinates (from 0 to 1)
-	    vec2 uv = gl_FragCoord.xy/iResolution.xy;
-	    
-	    // Time varying pixel color
-	    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-	    
-	    // Output to screen
-	    gl_FragColor = vec4(col,1.0);
-    }
-```
 #### Working with textures: 
 
 By default `shadertoy-react` lets you pass an array of texture object, `shadertoy-react` takes care of loading the textures for you. A callback is available and called once all the textures are done loading. 
@@ -214,3 +220,7 @@ In your shader you can directly do for example:
 * ~~Add support for iDate.~~ v1.0.0
 * ~~Add support for video textures.~~ v1.0.0
 * ~~Add support for iChannelResolution.~~ v1.0.0
+
+
+[build-size]: https://badge-size.herokuapp.com/mvilledieu/shadertoy-react/master/lib/shadertoy-react.min.js.svg?compression=gzip
+[build-size-url]: https://github.com/mvilledieu/shadertoy-react/master/lib/
