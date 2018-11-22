@@ -3,6 +3,7 @@ shadertoy-react
 
 [![npm version](https://badge.fury.io/js/shadertoy-react.svg)](https://badge.fury.io/js/shadertoy-react)
 [![Build Size][build-size]][build-size-url]
+[![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://opensource.org/licenses/mit-license.php)
 
 #### Shadertoy like React Component ####
 
