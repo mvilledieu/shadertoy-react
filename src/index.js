@@ -12,6 +12,8 @@ import Texture, {
   RepeatWrapping,
 } from './Texture';
 
+import { uniformTypeToGLSLType, processUniform } from './uniformsType';
+
 export {
   NearestFilter,
   LinearFilter,
@@ -62,8 +64,6 @@ const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
 // Uniforms not built-int in shadertoy
 const UNIFORM_DEVICEORIENTATION = 'iDeviceOrientation';
 
-const RAD = Math.PI / 180;
-
 /* eslint-disable */
 type TexturePropsType = {
   url: string,
@@ -77,19 +77,19 @@ type TexturePropsType = {
 
 type Uniform = {
   type: string,
-  value: number | string,
+  value: number | Array<number>,
 };
 
 type Props = {
   fs: string,
   vs?: string,
   textures?: Array<TexturePropsType>,
+  uniforms?: Array<Uniform>,
   style?: string,
   contextAttributes?: Object,
   onDoneLoadingTextures?: Function,
   lerp?: number,
   devicePixelRatio?: number,
-  uniforms?: Array<Uniform>,
 };
 
 type Shaders = {
@@ -113,6 +113,7 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   constructor(props){
     super(props);
+
 
     this.uniforms = {
       [UNIFORM_TIME]: {
@@ -163,7 +164,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   componentDidMount = () => {
     this.initWebGL();
 
-    const { fs, vs, textures, onDoneLoadingTextures } = this.props;
+    const { fs, vs } = this.props;
     const { gl } = this;
 
     if (gl) {
@@ -176,42 +177,14 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.height = this.canvas.clientHeight;
       this.canvas.width = this.canvas.clientWidth;
 
-      if (textures && textures.length > 0) {
-
-        this.uniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
-          type: 'vec3',
-          isNeeded: false,
-          arraySize: `[${textures.length}]`,
-          value: [],
-        };
-
-        const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
-
-          this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
-            type: 'sampler2D',
-            isNeeded: false,
-          }; // Dynamically add textures uniforms
-
-          this.setupChannelRes(texture, id); // initialize array with 0s
-          this.texturesArr[id] = new Texture(gl);
-          return this.texturesArr[id]
-                  .load(texture, id)
-                  .then(texture => this.setupChannelRes(texture, id));
-        });
-
-        Promise.all(texturePromisesArr)
-          .then(() => {
-            if (onDoneLoadingTextures) onDoneLoadingTextures();
-          });
-      }
-      
+      this.processCustomUniforms();
+      this.processTextures();      
       const shaders = this.preProcessShaders(fs || BASIC_FS, vs || BASIC_VS);
       this.initShaders(shaders);
       this.initBuffers();
       this.drawScene();
       this.addEventListeners();
       this.onResize();
-      // this.timeoutId = setTimeout(() => this.onResize(), 500);
     }
   };
 
@@ -236,7 +209,6 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
 
     this.removeEventListeners();
-    // clearTimeout(this.timeoutId);
     cancelAnimationFrame(this.animFrameId);
   }
 
@@ -317,10 +289,10 @@ export default class ShadertoyReact extends Component<Props, *> {
     }
 
     if(this.uniforms.iDeviceOrientation.isNeeded) {
-      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, passive);
+      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, options);
     }
 
-    window.removeEventListener('resize', this.onResize, { passive: true });
+    window.removeEventListener('resize', this.onResize, options);
   };
 
   onDeviceOrientationChange = ({alpha, beta, gamma}) => {
@@ -328,8 +300,6 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   mouseDown = e => {
-    this.canvasPosition = this.canvas.getBoundingClientRect();
-
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
@@ -370,6 +340,7 @@ export default class ShadertoyReact extends Component<Props, *> {
   onResize = () => {
     const { gl } = this;
     const { devicePixelRatio = 1 } = this.props;
+
     this.canvasPosition = this.canvas.getBoundingClientRect();
 
     const realToCSSPixels = devicePixelRatio; // Force pixel ratio to be one to avoid expensive calculus on retina display
@@ -377,6 +348,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     const displayWidth = Math.floor(
       this.canvasPosition.width * realToCSSPixels
     );
+    
     const displayHeight = Math.floor(
       this.canvasPosition.height * realToCSSPixels
     );
@@ -484,6 +456,75 @@ export default class ShadertoyReact extends Component<Props, *> {
     gl.enableVertexAttribArray(this.vertexPositionAttribute);
   };
 
+  processCustomUniforms = () => {
+    const { uniforms } = this.props;
+    if(uniforms) {
+      Object.keys(uniforms).forEach( (name: string, id: number) => {
+
+        const { value, type } = this.props.uniforms[name];
+
+        const glslType = uniformTypeToGLSLType(type);
+        if(!glslType) return; // If the type specified doesn't exist
+
+        let tempObject = {};
+        if(type.includes('Matrix')){
+          const arrayLength = type.length;
+          const val = type.charAt(arrayLength - 3);
+          const numberOfMatrices = Math.floor(value.length / (val * val));
+          if(value.length > (val * val)) {
+            tempObject.arraySize = `[${numberOfMatrices}]`;
+          }
+        } else if (type.includes('v') && value.length > type.charAt(0)) {
+          tempObject.arraySize = `[${ Math.floor(value.length /  type.charAt(0))  }]`;
+        }
+
+        this.uniforms[name] = {
+            type: glslType,
+            isNeeded: false,
+            value,
+            ...tempObject,
+        }
+      });
+    }
+  }
+
+  processTextures = () => {
+    const { gl } = this;
+    const { textures, onDoneLoadingTextures } = this.props;
+
+    if (textures && textures.length > 0) {
+
+      this.uniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
+        type: 'vec3',
+        isNeeded: false,
+        arraySize: `[${textures.length}]`,
+        value: [],
+      };
+
+      const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
+        this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
+          type: 'sampler2D',
+          isNeeded: false,
+        }; // Dynamically add textures uniforms
+
+        this.setupChannelRes(texture, id); // initialize array with 0s
+        this.texturesArr[id] = new Texture(gl);
+        return this.texturesArr[id]
+                .load(texture, id)
+                .then(texture => this.setupChannelRes(texture, id));
+      });
+
+      Promise.all(texturePromisesArr)
+        .then(() => onDoneLoadingTextures && onDoneLoadingTextures() )
+        .catch(() => {
+          console.error('ShadertoyReact: problem encountered while loading textures');
+          if (onDoneLoadingTextures) onDoneLoadingTextures();
+        });
+    } else {
+      if (onDoneLoadingTextures) onDoneLoadingTextures();
+    }
+  }
+
   preProcessShaders = (fs: string, vs: string) => {
     let fsString = FS_PRECISION_PREPROCESSOR
                     .concat(fs)
@@ -507,11 +548,25 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   setUniforms = (timestamp: number) => {
-
     const { gl } = this;
     
     let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
     this.lastTime = timestamp;
+
+    if(this.props.uniforms){
+      Object.keys(this.props.uniforms).forEach(
+        name => {
+          const currentUniform = this.props.uniforms[name];
+          if(currentUniform.isNeeded){
+            const customUniformLocation = gl.getUniformLocation(
+              this.shaderProgram, 
+              name
+            );  
+            processUniform(gl, customUniformLocation, currentUniform.type, currentUniform.value);
+          }
+        }
+      );
+    }
 
     if (this.uniforms.iMouse.isNeeded) {
       const mouseUniform = gl.getUniformLocation(
