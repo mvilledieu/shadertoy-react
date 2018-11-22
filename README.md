@@ -124,11 +124,11 @@ const ExampleApp = () => {
 	};
 	    
 	return <Container>
-						<ShadertoyReact 
-							fs={fs}
-							uniforms={}
-						/>
-				</Container>;
+                <ShadertoyReact 
+                    fs={fs}
+                    uniforms={}
+                />
+            </Container>;
 }
 ```
 Example of shader you could write using these custom uniforms: 
