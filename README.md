@@ -112,7 +112,8 @@ import { render} from  'react-dom';
 import ShadertoyReact from 'shadertoy-react';
 
 const ExampleApp = () => {
-	const { scrollY } = this.state;
+    const { scrollY } = this.state;
+    
 	const uniforms = {
 		uScrollY : {type: '1f', value: scrollY }, // float
 		uTestArrayFloats : {type: '1fv', value: [0.2, 0.4, 0.5, 0.5, 0.6] }, // Array of float
@@ -126,7 +127,7 @@ const ExampleApp = () => {
 	return <Container>
                 <ShadertoyReact 
                     fs={fs}
-                    uniforms={}
+                    uniforms={uniforms}
                 />
             </Container>;
 }
@@ -152,7 +153,7 @@ const ExampleApp = () =>
 	<Container>
 		<ShadertoyReact 
 			fs={fs}
-			textures={[ 
+			textures={[
 			    { url: './mytexture.png' },
 			]}
 		/>
