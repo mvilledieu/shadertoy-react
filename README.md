@@ -20,28 +20,28 @@ Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` a
 
 Example of the simplest React Component using `shadertoy-react`:
 ```javascript
-    import React from  'react';
-	import { render} from  'react-dom';
-    import ShadertoyReact from 'shadertoy-react';
+import React from  'react';
+import { render} from  'react-dom';
+import ShadertoyReact from 'shadertoy-react';
 
-	const ExampleApp = () =>
-		<Container>
-			<ShadertoyReact fs={fs}/>
-		</Container>;
+const ExampleApp = () =>
+	<Container>
+		<ShadertoyReact fs={fs}/>
+	</Container>;
 ```	
 
 Example of basic shader: 
 ```c
-    void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-	    // Normalized pixel coordinates (from 0 to 1)
-	    vec2 uv = gl_FragCoord.xy/iResolution.xy;
-	    
-	    // Time varying pixel color
-	    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-	    
-	    // Output to screen
-	    gl_FragColor = vec4(col,1.0);
-    }
+void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+	// Normalized pixel coordinates (from 0 to 1)
+	vec2 uv = gl_FragCoord.xy/iResolution.xy;
+
+	// Time varying pixel color
+	vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+
+	// Output to screen
+	gl_FragColor = vec4(col,1.0);
+}
 ```
 
 ## Available props
@@ -107,28 +107,28 @@ Shadertoy React now supports adding your owns uniforms by passing an uniforms pr
 How to do it: 
 
 ```javascript
-    import React from  'react';
-	import { render} from  'react-dom';
-    import ShadertoyReact from 'shadertoy-react';
+import React from  'react';
+import { render} from  'react-dom';
+import ShadertoyReact from 'shadertoy-react';
 
-	const ExampleApp = () => {
-	    const { scrollY } = this.state;
-	    const uniforms = {
-	        uScrollY : {type: '1f', value: scrollY }, // float
-	        uTestArrayFloats : {type: '1fv', value: [0.2, 0.4, 0.5, 0.5, 0.6] }, // Array of float
-	        uTestArrayVecs2 : {type: '2fv', value: [0.2, 0.4, 0.5, 0.5] }, // 2 vec2 passed as a flat array
-	        uTestMatrix : {
-	            type: 'Matrix2fv', 
-	            value: [0., 1., 2., 3.] // 2x2 Matrix 
-	        }
-	    };
+const ExampleApp = () => {
+	const { scrollY } = this.state;
+	const uniforms = {
+		uScrollY : {type: '1f', value: scrollY }, // float
+		uTestArrayFloats : {type: '1fv', value: [0.2, 0.4, 0.5, 0.5, 0.6] }, // Array of float
+		uTestArrayVecs2 : {type: '2fv', value: [0.2, 0.4, 0.5, 0.5] }, // 2 vec2 passed as a flat array
+		uTestMatrix : {
+		    type: 'Matrix2fv', 
+		    value: [0., 1., 2., 3.] // 2x2 Matrix 
+		}
+	};
 	    
-		return <Container>
-			<ShadertoyReact 
-			    fs={fs}
-			    uniforms={}
-		    />
-		</Container>;
+	return <Container>
+						<ShadertoyReact 
+							fs={fs}
+							uniforms={}
+						/>
+				</Container>;
 }
 ```
 Example of shader you could write using these custom uniforms: 
@@ -144,29 +144,29 @@ Example of shader you could write using these custom uniforms:
 By default `shadertoy-react` lets you pass an array of texture object, `shadertoy-react` takes care of loading the textures for you. A callback is available and called once all the textures are done loading. 
 
 ```javascript
-    import React from  'react';
-	import { render} from  'react-dom';
-    import ShadertoyReact, { LinearFilter, RepeatWrapping } from 'shadertoy-react';
+import React from  'react';
+import { render} from  'react-dom';
+import ShadertoyReact, { LinearFilter, RepeatWrapping } from 'shadertoy-react';
 
-	const ExampleApp = () =>
-		<Container>
-			<ShadertoyReact 
-                fs={fs}
-                textures={[ 
-                    { url: './mytexture.png' },
-                ]}
-            />
-		</Container>;
+const ExampleApp = () =>
+	<Container>
+		<ShadertoyReact 
+			fs={fs}
+			textures={[ 
+			    { url: './mytexture.png' },
+			]}
+		/>
+	</Container>;
 ```
 
 In your shader you can directly do for example: 
 
 ```c
-    void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-        vec2 uv = fragCoord.xy / iResolution.xy;
-	    vec4 texture = texture(iChannel0, uv);
-	    gl_FragColor = texture;
-    }
+void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+	vec2 uv = fragCoord.xy / iResolution.xy;
+	vec4 texture = texture(iChannel0, uv);
+	gl_FragColor = texture;
+}
 ```
 
 ##### Texture Filtering: 
@@ -188,20 +188,20 @@ In your shader you can directly do for example:
 ```
 **Example of usage of optionnal texture filtering:**
 ```javascript
-    import React from  'react';
+	import React from  'react';
 	import { render} from  'react-dom';
-    import ShadertoyReact, { LinearFilter, RepeatWrapping } from 'shadertoy-react';
+	import ShadertoyReact, { LinearFilter, RepeatWrapping } from 'shadertoy-react';
 
 	const ExampleApp = () =>
 		<Container>
 			<ShadertoyReact 
-                fs={fs}
-                textures={[ 
-                    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
-                    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
-                    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
-                ]}
-            />
+				fs={fs}
+				textures={[ 
+				    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
+				    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
+				    { url: ..., minFilter: LinearFilter, magFilter: LinearFilter, wrapS: RepeatWrapping, wrapT: RepeatWrapping },
+				]}
+			/>
 		</Container>;
 ```
 ## What's next ordered by priority
