@@ -7,10 +7,10 @@ import fsImages from './shaders/fsImages';
 import mouse from './shaders/mouse';
 import clock from './shaders/clock';
 import deviceorientation from './shaders/deviceorientation.js';
+import classicSyntax from './shaders/classicSyntax.js';
 
 const GlobalStyle = createGlobalStyle`
     body, html {
-        position: fixed;
         width: 100%;
         height: 100%;
         margin: 0;
@@ -35,20 +35,17 @@ const fadeOut = keyframes`
 const Container = styled.div`
     display: flex;
     flex-wrap: wrap;
+    flex-direction: row;
 `;
 
-const Test = styled.div`
-    position: relative;
-    width: 33.333% !important;
-    height: 33.333% !important;
+const Parent = styled.div`
+    flex-grow : 1;
+    height : calc(100vh/3);
+    width : calc(100vw/3);
 `;
 
-const Test1 = styled.div`
-    position: relative;
-    width: 33.333% !important;
-    height: 33.333% !important;
+const TestCallbackFading = styled(Parent)`
     opacity: 0;
-
     transition: opacity 500ms;
     opacity : ${ props => props.fadeIn ?  1 : 0 }
 `;
@@ -70,10 +67,11 @@ class App extends Component {
 
     render(){
         return <Container>
-            <Test1 fadeIn={this.state.fadeIn}>
+            <TestCallbackFading fadeIn={this.state.fadeIn}>
                 <ShadertoyReact 
                     fs={fsImages}
                     devicePixelRatio={0.2}
+                    precision={'highp'}
                     textures={[
                         {url: 'https://i.imgur.com/uIEexIc.jpg'},
                         {url: 'http://techslides.com/demos/sample-videos/small.ogv'}
@@ -83,17 +81,17 @@ class App extends Component {
                         console.log('onDoneLoadingTextures');
                     }}
                 />
-            </Test1>
-            <Test>  
+            </TestCallbackFading>
+            <Parent>  
                 <ShadertoyReact fs={mouse} />
-            </Test>  
-            <Test>  
+            </Parent>  
+            <Parent>  
                 <ShadertoyReact fs={clock}/>
-            </Test>  
-            <Test>  
+            </Parent>  
+            <Parent>  
                 <ShadertoyReact fs={deviceorientation}/>
-            </Test>
-            <Test>  
+            </Parent>
+            <Parent>  
                 <ShadertoyReact 
                     fs={fs}
                     uniforms={{
@@ -103,19 +101,19 @@ class App extends Component {
                         uTest5 : { type: 'Matrix2fv', value: [this.state.val, 1., this.state.val, this.state.val] },
                     }}
                 />
-            </Test>
-            <Test>  
+            </Parent>
+            <Parent>  
+                <ShadertoyReact fs={classicSyntax}/>
+            </Parent>
+            <Parent>  
                 <ShadertoyReact fs={fs}/>
-            </Test>
-            <Test>  
+            </Parent>
+            <Parent>  
                 <ShadertoyReact fs={fs}/>
-            </Test>
-            <Test>  
+            </Parent>
+            <Parent>  
                 <ShadertoyReact fs={fs}/>
-            </Test>
-            <Test>  
-                <ShadertoyReact fs={fs}/>
-            </Test>
+            </Parent>
             <GlobalStyle />
         </Container> ;
     }

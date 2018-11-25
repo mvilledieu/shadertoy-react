@@ -7,13 +7,15 @@ shadertoy-react
 
 #### Shadertoy like React Component ####
 
-Small react component letting you easily add shaders you've been building on Shadertoy to your React page. I found myself using Shadertoy most of the time when I needed to create some shader for projects, since the live reload functionnality makes it really easy to start working on the visual quickly. 
+Small react component letting you easily add responsive full canvas shader to your React page. `shadertoy-react` supports `shadertoy` glsl syntax, but also the classic glsl syntax, so you can easily build your shader in shadertoy leveraging the live reload functionality and copy past it to your React app once you are done without having to worry about converting the syntax to the classic glsl syntax.
 
- Can be really usefull when you want to add some interactive pieces in your web page or even just replace static images by interactive/generative shader.
+`shadertoy-react` also gives you access to almost all the built in uniforms existing on `shadertoy` plus some new ones like for example the gyroscope data of your phone etc. Start writting code using any of these built in uniforms without having to worry about passing anything to the shader, `shadertoy-react` takes care of all that for you. Also, you can still pass customs uniforms as a prop if you actually need some more flexibility.
+
+You could for example use postprocessing on images and videos, raytracing, raymarching, etc... the limitation are yours, now you have everything you need to focus on the shader art itself.
 
 ## The way it works
 
-Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component. It is also making sure that anything that is not used in your shader is not being processed in the JS side to avoid useless event listeners, etc. so if you don't use the `iMouse` uniform the mouse event listener will not be activated and the `iMouse` will not be added and passed to your shader.
+Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component. It is also making sure that anything that is not used in your shader is not being processed in the JS side to avoid useless event listeners, etc. so if you don't use the `iMouse` uniform the mouse event listener will not be activated and the `iMouse` uniform will not be added and passed to your shader.
 
 ## How to use it
 
@@ -31,16 +33,19 @@ const ExampleApp = () =>
 	</Container>;
 ```	
 
-Example of basic shader: 
+Example of working shader with `shadertoy` like syntax: 
 ```c
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-	// Normalized pixel coordinates (from 0 to 1)
-	vec2 uv = gl_FragCoord.xy/iResolution.xy;
-
-	// Time varying pixel color
+	vec2 uv = fragCoord.xy/iResolution.xy;
 	vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-
-	// Output to screen
+	fragColor = vec4(col,1.0);
+}
+```
+Example of working shader with classic GLSL syntax: 
+```c
+void main(void) {
+	vec2 uv = gl_FragCoord.xy/iResolution.xy;
+	vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
 	gl_FragColor = vec4(col,1.0);
 }
 ```
@@ -49,12 +54,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 
 Here are a few built in react props you can pass to your component. Feel free to suggest more.
 
+  * `fs` -- A string containing your fragment shader.
   * `textures` -- An array of textures objects following that structure `{url: ... , minFilter: , magFilter: , wrapS: ,wrapT: }` the format supported are (.jpg, .jpeg, .png, .bmp) for images, and (.mp4, .3gp, .webm, .ogv) for videos. 
   * `uniforms` -- An object containing uniforms objects following that structure { uTest: {type: , value: }, uTest2: {type: , value: }, uTest3: {type: , value: } ... }. To know more about the supported types please refer to the [custom uniforms section](#Custom-uniforms). 
+  * `precision` -- GLSL Precision qualifier, by default mediump, it can be lowp, mediump, highp depending on how much precision the GPU uses when calculating floats.
   * `devicePixelRatio` -- A value passed to set the [pixel density](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) of the canvas. By default 1.
-  * `fs` -- A string containing your fragment shader.
-  * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
   * `contextOptions` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
+  * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
   * `onDoneLoadingTextures` -- Callback called once all textures are done being loaded, usefull when you want to wait for your shader to have all the needed texture before seeing it on screen. Using that callback you could for example simply fade the canvas in using css. 
   * `lerp` -- A value in between 0 - 1 used to lerp the mouse position in your fragment shader.
   
@@ -143,7 +149,7 @@ Example of shader you could write using these custom uniforms:
   
 #### Working with textures: 
 
-By default `shadertoy-react` lets you pass an array of texture object, `shadertoy-react` takes care of loading the textures for you. A callback is available and called once all the textures are done loading. 
+By default `shadertoy-react` lets you pass an array of texture object, `shadertoy-react` takes care of loading the textures for you. A callback is available and called once all the textures are done loading. Each texture gets a uniform name `iChannel(n)` following the same order that in the prop passed to the react component, you can then directly use `iChanel(n)` in your shader.
 
 ```javascript
 import React from  'react';
@@ -208,21 +214,22 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 ```
 ## What's next ordered by priority
 
+* Add support for #define constantes in shader from prop.
 * Add camera feed as a texture.
 * Add support for Data texture.
 * Add support for WebGL2 and GLSL 3.0.
-* Add support for classic syntax (void main(void)) etc.
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
-* Add built in uniform for phone device orientation / gyroscope based effects.
 * Add support for keyboard uniforms / inputs.
 * Add support for iChannelTime.
+* ~~Add shader precision as react prop.~~
+* ~~Add support for classic syntax (void main(void)) etc.~~ v1.0.2
 * ~~Add support for custom uniforms.~~ v1.0.1
 * ~~Add props for optionnal mouse lerping.~~ v1.0.0
+* ~~Add built in uniform for phone device orientation / gyroscope based effects.~~  v1.0.0
 * ~~Add support for iDate.~~ v1.0.0
 * ~~Add support for video textures.~~ v1.0.0
 * ~~Add support for iChannelResolution.~~ v1.0.0
-
 
 [build-size]: https://badge-size.herokuapp.com/mvilledieu/shadertoy-react/master/lib/shadertoy-react.min.js.svg?compression=gzip
 [build-size-url]: https://github.com/mvilledieu/shadertoy-react/master/lib/

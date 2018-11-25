@@ -12,6 +12,8 @@ import Texture, {
   RepeatWrapping,
 } from './Texture';
 
+import { SRLOG } from './prefixLogs';
+
 import { uniformTypeToGLSLType, processUniform } from './uniformsType';
 
 export {
@@ -26,10 +28,7 @@ export {
   RepeatWrapping,
 };
 
-const FS_PRECISION_PREPROCESSOR = 
-`#ifdef GL_ES
-    precision highp float;
-#endif\n`;
+const PRECISIONS = ['lowp', 'mediump', 'highp'];
 
 const FS_MAIN_SHADER = 
 `\nvoid main(void){
@@ -114,6 +113,14 @@ export default class ShadertoyReact extends Component<Props, *> {
   constructor(props){
     super(props);
 
+    const { precision } = this.props;
+    const isValidPrecision = PRECISIONS.includes(precision);
+    
+    if(!isValidPrecision) { 
+      console.warn(SRLOG`wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to mediump.`);
+    }
+
+    this.precision = `precision ${isValidPrecision ? precision : PRECISIONS[1]} float;\n`;
 
     this.uniforms = {
       [UNIFORM_TIME]: {
@@ -159,6 +166,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     contextAttributes: { premultipliedAlpha: false, alpha: true },
     devicePixelRatio: 1,
     vs: BASIC_VS,
+    precision: 'mediump',
   };
 
   componentDidMount = () => {
@@ -414,10 +422,10 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     /* eslint-disable no-console */
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.warn('Error compiling the shader:', shaderCodeAsText);
+      console.warn(SRLOG`Error compiling the shader:`, shaderCodeAsText);
       const compilationLog = gl.getShaderInfoLog(shader);
       gl.deleteShader(shader);
-      console.error(`Shader compiler log: ${compilationLog}`);
+      console.error(SRLOG(`Shader compiler log: ${compilationLog}`));
     }
     /* eslint-enable no-console */
 
@@ -439,9 +447,9 @@ export default class ShadertoyReact extends Component<Props, *> {
     if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
       // $FlowFixMe
       console.error(
-        `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+        SRLOG(`Unable to initialize the shader program: ${gl.getProgramInfoLog(
           this.shaderProgram
-        )}`
+        )}`)
       );
       return;
     }
@@ -517,7 +525,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       Promise.all(texturePromisesArr)
         .then(() => onDoneLoadingTextures && onDoneLoadingTextures() )
         .catch(() => {
-          console.error('ShadertoyReact: problem encountered while loading textures');
+          console.error(SRLOG`Problem encountered while loading textures`);
           if (onDoneLoadingTextures) onDoneLoadingTextures();
         });
     } else {
@@ -526,23 +534,27 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   preProcessShaders = (fs: string, vs: string) => {
-    let fsString = FS_PRECISION_PREPROCESSOR
+
+    const isShadertoy = /mainImage/.test(fs);
+    
+    let fsString = this.precision
                     .concat(fs)
                     .replace(/texture\(/g, 'texture2D(');
 
-    const lastPreprocessorString = '#endif';
-    const index = fsString.lastIndexOf(lastPreprocessorString);
+    const indexOfPrecisionString = fsString.lastIndexOf(this.precision);
     Object.keys(this.uniforms).forEach((uniform: string) => {
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
           `uniform ${this.uniforms[uniform].type} ${uniform}${this.uniforms[uniform].arraySize || ''}; \n`,
-          index + lastPreprocessorString.length + 1
+          indexOfPrecisionString + this.precision.length
         );
         this.uniforms[uniform].isNeeded = true;
       }
     });
-    fsString = fsString.concat(FS_MAIN_SHADER);
+
+    if(isShadertoy) fsString = fsString.concat(FS_MAIN_SHADER);
+
     // console.log(fsString);
     return { fs: fsString, vs };
   };
@@ -553,7 +565,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
     this.lastTime = timestamp;
 
-    if(this.props.uniforms){
+    if (this.props.uniforms) {
       Object.keys(this.props.uniforms).forEach(
         name => {
           const currentUniform = this.props.uniforms[name];
@@ -674,7 +686,6 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     const currentStyle = {
         glCanvas: {
-          position: 'absolute',
           height: '100%',
           width: '100%',
           ...style,
