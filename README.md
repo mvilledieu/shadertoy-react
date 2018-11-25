@@ -49,12 +49,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 
 Here are a few built in react props you can pass to your component. Feel free to suggest more.
 
+  * `fs` -- A string containing your fragment shader.
   * `textures` -- An array of textures objects following that structure `{url: ... , minFilter: , magFilter: , wrapS: ,wrapT: }` the format supported are (.jpg, .jpeg, .png, .bmp) for images, and (.mp4, .3gp, .webm, .ogv) for videos. 
   * `uniforms` -- An object containing uniforms objects following that structure { uTest: {type: , value: }, uTest2: {type: , value: }, uTest3: {type: , value: } ... }. To know more about the supported types please refer to the [custom uniforms section](#Custom-uniforms). 
+  * `precision` -- GLSL Precision qualifier, by default mediump, it can be lowp, mediump, highp depending on how much precision the GPU uses when calculating floats.
   * `devicePixelRatio` -- A value passed to set the [pixel density](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) of the canvas. By default 1.
-  * `fs` -- A string containing your fragment shader.
-  * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
   * `contextOptions` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
+  * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
   * `onDoneLoadingTextures` -- Callback called once all textures are done being loaded, usefull when you want to wait for your shader to have all the needed texture before seeing it on screen. Using that callback you could for example simply fade the canvas in using css. 
   * `lerp` -- A value in between 0 - 1 used to lerp the mouse position in your fragment shader.
   
