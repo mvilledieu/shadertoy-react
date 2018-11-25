@@ -1,4 +1,8 @@
 // @flow
+
+import { APP_NAME } from './index';
+import { SRLOG } from './prefixLogs';
+
 export const NearestFilter = 9728;
 export const LinearFilter = 9729;
 export const NearestMipMapNearestFilter = 9984;
@@ -118,11 +122,9 @@ export default class Texture {
         );
   
         // eslint-disable-next-line
-        console.warn(
-          `ShadertoyReact: Image is not power of two ${image.width} x ${
-            image.height
-          }. Resized to ${this.pow2canvas.width} x ${this.pow2canvas.height}`
-        );
+        console.warn(SRLOG(`Image is not power of two ${image.width} x ${
+          image.height
+        }. Resized to ${this.pow2canvas.width} x ${this.pow2canvas.height};`));
   
         return this.pow2canvas;
       }
@@ -149,7 +151,7 @@ export default class Texture {
         this.flipY = flipY;
 
         if(isImage === null && isVideo === null ){
-            console.error('ShadertoyReact: Missing url, please make sure to pass the url of your texture { url: ... }');
+            console.error(SRLOG`Missing url, please make sure to pass the url of your texture { url: ... }`);
             return;
         }
 
@@ -157,7 +159,7 @@ export default class Texture {
         const isVideo = /(\.mp4|\.3gp|\.webm|\.ogv)$/i.exec(url);
 
         if(isImage === null && isVideo === null ){
-            console.error('ShadertoyReact: please upload a video or an image with a valid format', url);
+            console.error(SRLOG`please upload a video or an image with a valid format`, url);
             return;
         }
 
@@ -203,7 +205,7 @@ export default class Texture {
             let image = new Image();
             image.crossOrigin = 'anonymous';
             image.onload = () => resolve(image);
-            image.onerror = () => reject(new Error(`failed loading url: ${url}`));
+            image.onerror = () => reject(new Error(SRLOG(`failed loading url: ${url}`)));
             image.src = url;
         }).then(image => {
             let isPowerOfTwoImage =

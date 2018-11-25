@@ -208,21 +208,22 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 ```
 ## What's next ordered by priority
 
+* Add support for #define constantes in shader from prop.
 * Add camera feed as a texture.
 * Add support for Data texture.
 * Add support for WebGL2 and GLSL 3.0.
-* Add support for classic syntax (void main(void)) etc.
 * Add support to multi passes as Shadertoy is doing.
 * Add support for Cube texture.
-* Add built in uniform for phone device orientation / gyroscope based effects.
 * Add support for keyboard uniforms / inputs.
 * Add support for iChannelTime.
+* ~~Add shader precision as react prop.~~
+* ~~Add support for classic syntax (void main(void)) etc.~~ v1.0.2
 * ~~Add support for custom uniforms.~~ v1.0.1
 * ~~Add props for optionnal mouse lerping.~~ v1.0.0
+* ~~Add built in uniform for phone device orientation / gyroscope based effects.~~  v1.0.0
 * ~~Add support for iDate.~~ v1.0.0
 * ~~Add support for video textures.~~ v1.0.0
 * ~~Add support for iChannelResolution.~~ v1.0.0
-
 
 [build-size]: https://badge-size.herokuapp.com/mvilledieu/shadertoy-react/master/lib/shadertoy-react.min.js.svg?compression=gzip
 [build-size-url]: https://github.com/mvilledieu/shadertoy-react/master/lib/

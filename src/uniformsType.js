@@ -1,4 +1,5 @@
 // @flow
+import { SRLOG } from './prefixLogs';
 
 const INT = 'int';
 const FLOAT = 'float';
@@ -84,7 +85,6 @@ export const processUniform = (gl: WebGLContext, location, type: Uniforms, value
             gl.uniformMatrix4fv( location, false, value );
             break;
         default:
-            console.warn(`ShaderToyReact: The uniform type ${type} is not valid, please make sure your type is valid`);
             break;
     }
 }
@@ -149,6 +149,6 @@ export const uniformTypeToGLSLType = (type: string) => {
             return 'mat4';
             break;
         default: 
-            console.error(`ShaderToyReact: The uniform type "${type}" is not valid, please make sure your uniform type is valid`);
+            console.error(SRLOG`The uniform type "${type}" is not valid, please make sure your uniform type is valid`);
     }
 }
