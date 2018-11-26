@@ -479,6 +479,7 @@ export default class ShadertoyReact extends Component<Props, *> {
           const arrayLength = type.length;
           const val = type.charAt(arrayLength - 3);
           const numberOfMatrices = Math.floor(value.length / (val * val));
+
           if(value.length > (val * val)) {
             tempObject.arraySize = `[${numberOfMatrices}]`;
           }
@@ -569,7 +570,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       Object.keys(this.props.uniforms).forEach(
         name => {
           const currentUniform = this.props.uniforms[name];
-          if(currentUniform.isNeeded){
+          if(this.uniforms[name].isNeeded){
             const customUniformLocation = gl.getUniformLocation(
               this.shaderProgram, 
               name

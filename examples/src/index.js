@@ -8,6 +8,7 @@ import mouse from './shaders/mouse';
 import clock from './shaders/clock';
 import deviceorientation from './shaders/deviceorientation.js';
 import classicSyntax from './shaders/classicSyntax.js';
+import customUniforms from './shaders/customUniforms.js';
 
 const GlobalStyle = createGlobalStyle`
     body, html {
@@ -93,12 +94,9 @@ class App extends Component {
             </Parent>
             <Parent>  
                 <ShadertoyReact 
-                    fs={fs}
+                    fs={customUniforms}
                     uniforms={{
-                        uTest : { type: '2fv', value: [this.state.val, 1., 2., 2.] },
-                        uTest2 : { type: '2f', value: [this.state.val, 1.] },
-                        uTest5 : { type: '4fv', value: [this.state.val, 1., this.state.val, this.state.val] },
-                        uTest5 : { type: 'Matrix2fv', value: [this.state.val, 1., this.state.val, this.state.val] },
+                        uTest : { type: '1f', value: this.state.val },
                     }}
                 />
             </Parent>
