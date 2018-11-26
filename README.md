@@ -21,7 +21,7 @@ Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` a
 
   Try `shadertoy-react` on codesandbox to get a taste of the functionalities. 
   
-* Basic Scene -- https://codesandbox.io/s/ojllzxvww6
+* [Basic](https://codesandbox.io/s/ojllzxvww6)
 
 ## How to use it
 
