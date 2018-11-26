@@ -1,4 +1,4 @@
-shadertoy-react
+shadertoy-react :art:
 ==============
 
 [![npm version](https://badge.fury.io/js/shadertoy-react.svg)](https://badge.fury.io/js/shadertoy-react)
@@ -17,8 +17,10 @@ You could for example use postprocessing on images and videos, raytracing, rayma
 
 Same as the Shadertoy implementation. Basically it uses WebGL on a `<canvas/>` and render a material on a full viewport quad composed of 2 triangles. The canvas size matches the css size of your element, by default it it 100% 100% of your parent element size, this can be changed by passing a custom `style={}` prop to your component. It is also making sure that anything that is not used in your shader is not being processed in the JS side to avoid useless event listeners, etc. so if you don't use the `iMouse` uniform the mouse event listener will not be activated and the `iMouse` uniform will not be added and passed to your shader.
 
-## Try it here
+### Playground
 
+  Try `shadertoy-react` on codesandbox to get a taste of the functionalities. 
+  
 https://codesandbox.io/s/ojllzxvww6
 
 ## How to use it
