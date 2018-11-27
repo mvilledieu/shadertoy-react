@@ -84,6 +84,8 @@ type Props = {
   vs?: string,
   textures?: Array<TexturePropsType>,
   uniforms?: Array<Uniform>,
+  clearColor?: Array<number>,
+  precision?: string,
   style?: string,
   contextAttributes?: Object,
   onDoneLoadingTextures?: Function,
@@ -163,7 +165,7 @@ export default class ShadertoyReact extends Component<Props, *> {
 
   static defaultProps = {
     textures: [],
-    contextAttributes: { premultipliedAlpha: false, alpha: true },
+    contextAttributes: {},
     devicePixelRatio: 1,
     vs: BASIC_VS,
     precision: 'mediump',
@@ -172,14 +174,14 @@ export default class ShadertoyReact extends Component<Props, *> {
   componentDidMount = () => {
     this.initWebGL();
 
-    const { fs, vs } = this.props;
+    const { fs, vs, clearColor = [0, 0, 0, 1] } = this.props;
     const { gl } = this;
 
     if (gl) {
-      gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
-      gl.clearDepth(1.0); // Clear everything
-      gl.enable(gl.DEPTH_TEST); // Enable depth testing
-      gl.depthFunc(gl.LEQUAL); // Near things obscure far things
+      gl.clearColor(...clearColor); 
+      gl.clearDepth(1.0); 
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LEQUAL);
       gl.viewport(0, 0, this.canvas.width, this.canvas.height);
       
       this.canvas.height = this.canvas.clientHeight;
@@ -387,7 +389,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.drawingBufferWidth,
       gl.drawingBufferHeight
     );
-
+    
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // eslint-disable-line no-bitwise
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticesBuffer);

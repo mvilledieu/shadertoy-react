@@ -62,7 +62,8 @@ Here are a few built in react props you can pass to your component. Feel free to
 
   * `fs` -- A string containing your fragment shader.
   * `textures` -- An array of textures objects following that structure `{url: ... , minFilter: , magFilter: , wrapS: ,wrapT: }` the format supported are (.jpg, .jpeg, .png, .bmp) for images, and (.mp4, .3gp, .webm, .ogv) for videos. 
-  * `uniforms` -- An object containing uniforms objects following that structure { uTest: {type: , value: }, uTest2: {type: , value: }, uTest3: {type: , value: } ... }. To know more about the supported types please refer to the [custom uniforms section](#Custom-uniforms). 
+  * `uniforms` -- An object containing uniforms objects following that structure { uTest: {type: , value: }, uTest2: {type: , value: }, uTest3: {type: , value: } ... }. To know more about the supported types please refer to the [custom uniforms section](#Custom-uniforms).
+  * `clearColor` -- An array `[red, green, blue, alpha]` Specifies the color values used when clearing color buffers method of the [WebGL API](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor).
   * `precision` -- GLSL Precision qualifier, by default mediump, it can be lowp, mediump, highp depending on how much precision the GPU uses when calculating floats.
   * `devicePixelRatio` -- A value passed to set the [pixel density](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) of the canvas. By default 1.
   * `contextOptions` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
@@ -228,7 +229,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 * Add support for Cube texture.
 * Add support for keyboard uniforms / inputs.
 * Add support for iChannelTime.
-* ~~Add shader precision as react prop.~~
+* ~~Add possibility to specify gl clearColor in a prop~~ v1.0.4
+* ~~Add shader precision as react prop.~~ v1.0.2
 * ~~Add support for classic syntax (void main(void)) etc.~~ v1.0.2
 * ~~Add support for custom uniforms.~~ v1.0.1
 * ~~Add props for optionnal mouse lerping.~~ v1.0.0
