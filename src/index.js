@@ -1,5 +1,7 @@
 // @flow
-import React, { Component } from 'react';
+import React, {
+  Component
+} from 'react';
 import Texture, {
   NearestFilter,
   LinearFilter,
@@ -12,9 +14,14 @@ import Texture, {
   RepeatWrapping,
 } from './Texture';
 
-import { SRLOG } from './prefixLogs';
+import {
+  SRLOG
+} from './prefixLogs';
 
-import { uniformTypeToGLSLType, processUniform } from './uniformsType';
+import {
+  uniformTypeToGLSLType,
+  processUniform
+} from './uniformsType';
 
 export {
   NearestFilter,
@@ -30,22 +37,22 @@ export {
 
 const PRECISIONS = ['lowp', 'mediump', 'highp'];
 
-const FS_MAIN_SHADER = 
-`\nvoid main(void){
+const FS_MAIN_SHADER =
+  `\nvoid main(void){
     vec4 color = vec4(0.0,0.0,0.0,1.0);
     mainImage( color, gl_FragCoord.xy );
     gl_FragColor = color;
 }`;
 
 const BASIC_FS = // Basic shadertoy shader
-`void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
+  `void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 uv = fragCoord/iResolution.xy;
     vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
     fragColor = vec4(col,1.0);
 }`;
 
-const BASIC_VS = 
-`attribute vec3 aVertexPosition;
+const BASIC_VS =
+  `attribute vec3 aVertexPosition;
 void main(void) {
     gl_Position = vec4(aVertexPosition, 1.0);
 }`;
@@ -66,31 +73,31 @@ const UNIFORM_DEVICEORIENTATION = 'iDeviceOrientation';
 /* eslint-disable */
 type TexturePropsType = {
   url: string,
-  wrapS?: number,
-  wrapT?: number,
-  minFilter?: number,
-  magFilter?: number,
-  flipY?: number,
+  wrapS ? : number,
+  wrapT ? : number,
+  minFilter ? : number,
+  magFilter ? : number,
+  flipY ? : number,
 };
 /* eslint-emable */
 
 type Uniform = {
   type: string,
-  value: number | Array<number>,
+  value: number | Array < number > ,
 };
 
 type Props = {
   fs: string,
-  vs?: string,
-  textures?: Array<TexturePropsType>,
-  uniforms?: Array<Uniform>,
-  clearColor?: Array<number>,
-  precision?: string,
-  style?: string,
-  contextAttributes?: Object,
-  onDoneLoadingTextures?: Function,
-  lerp?: number,
-  devicePixelRatio?: number,
+  vs ? : string,
+  textures ? : Array < TexturePropsType > ,
+  uniforms ? : Array < Uniform > ,
+  clearColor ? : Array < number > ,
+  precision ? : string,
+  style ? : string,
+  contextAttributes ? : Object,
+  onDoneLoadingTextures ? : Function,
+  lerp ? : number,
+  devicePixelRatio ? : number,
 };
 
 type Shaders = {
@@ -100,29 +107,20 @@ type Shaders = {
 
 const lerpVal = (v0: number, v1: number, t: number) => v0 * (1 - t) + v1 * t;
 const insertStringAtIndex = (
-  currentString: string,
-  string: string,
-  index: number
-) =>
-  index > 0
-    ? currentString.substring(0, index) +
-      string +
-      currentString.substring(index, currentString.length)
-    : string + currentString;
+    currentString: string,
+    string: string,
+    index: number
+  ) =>
+  index > 0 ?
+  currentString.substring(0, index) +
+  string +
+  currentString.substring(index, currentString.length) :
+  string + currentString;
 
-export default class ShadertoyReact extends Component<Props, *> {
+export default class ShadertoyReact extends Component < Props, * > {
 
-  constructor(props){
+  constructor(props) {
     super(props);
-
-    const { precision } = this.props;
-    const isValidPrecision = PRECISIONS.includes(precision);
-    
-    if(!isValidPrecision) { 
-      console.warn(SRLOG`wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to mediump.`);
-    }
-
-    this.precision = `precision ${isValidPrecision ? precision : PRECISIONS[1]} float;\n`;
 
     this.uniforms = {
       [UNIFORM_TIME]: {
@@ -168,27 +166,33 @@ export default class ShadertoyReact extends Component<Props, *> {
     contextAttributes: {},
     devicePixelRatio: 1,
     vs: BASIC_VS,
-    precision: 'mediump',
+    precision: 'highp',
   };
 
   componentDidMount = () => {
     this.initWebGL();
 
-    const { fs, vs, clearColor = [0, 0, 0, 1] } = this.props;
-    const { gl } = this;
+    const {
+      fs,
+      vs,
+      clearColor = [0, 0, 0, 1]
+    } = this.props;
+    const {
+      gl
+    } = this;
 
     if (gl) {
-      gl.clearColor(...clearColor); 
-      gl.clearDepth(1.0); 
+      gl.clearColor(...clearColor);
+      gl.clearDepth(1.0);
       gl.enable(gl.DEPTH_TEST);
       gl.depthFunc(gl.LEQUAL);
       gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-      
+
       this.canvas.height = this.canvas.clientHeight;
       this.canvas.width = this.canvas.clientWidth;
 
       this.processCustomUniforms();
-      this.processTextures();      
+      this.processTextures();
       const shaders = this.preProcessShaders(fs || BASIC_FS, vs || BASIC_VS);
       this.initShaders(shaders);
       this.initBuffers();
@@ -201,9 +205,11 @@ export default class ShadertoyReact extends Component<Props, *> {
   shouldComponentUpdate = () => false;
 
   componentWillUnmount() {
-    const { gl } = this;
+    const {
+      gl
+    } = this;
 
-    if(gl) {
+    if (gl) {
       gl.getExtension('WEBGL_lose_context').loseContext();
 
       gl.useProgram(null);
@@ -222,8 +228,13 @@ export default class ShadertoyReact extends Component<Props, *> {
     cancelAnimationFrame(this.animFrameId);
   }
 
-  setupChannelRes = ({width, height}: Texture, id: number) => {
-    const { devicePixelRatio = 1 } = this.props;
+  setupChannelRes = ({
+    width,
+    height
+  }: Texture, id: number) => {
+    const {
+      devicePixelRatio = 1
+    } = this.props;
     this.uniforms.iChannelResolution.value[id * 3] = width * devicePixelRatio;
     this.uniforms.iChannelResolution.value[id * 3 + 1] = height * devicePixelRatio;
     this.uniforms.iChannelResolution.value[id * 3 + 2] = 0;
@@ -231,7 +242,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   initWebGL = () => {
-    const { contextAttributes } = this.props;
+    const {
+      contextAttributes
+    } = this.props;
     // $FlowFixMe
     this.gl =
       this.canvas.getContext('webgl', contextAttributes) ||
@@ -243,16 +256,18 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   initBuffers = () => {
-    const { gl } = this;
+    const {
+      gl
+    } = this;
 
     this.squareVerticesBuffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticesBuffer);
 
     const vertices = [
-      1.0, 1.0, 0.0, 
-      -1.0, 1.0, 0.0, 
-      1.0, -1.0, 0.0, 
+      1.0, 1.0, 0.0,
+      -1.0, 1.0, 0.0,
+      1.0, -1.0, 0.0,
       -1.0, -1.0, 0.0,
     ];
 
@@ -264,7 +279,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   addEventListeners = () => {
-    const options = { passive: true };
+    const options = {
+      passive: true
+    };
 
     if (this.uniforms.iMouse.isNeeded) {
       this.canvas.addEventListener('mousemove', this.mouseMove, options);
@@ -277,7 +294,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       this.canvas.addEventListener('touchstart', this.mouseDown, options);
     }
 
-    if(this.uniforms.iDeviceOrientation.isNeeded) {
+    if (this.uniforms.iDeviceOrientation.isNeeded) {
       window.addEventListener("deviceorientation", this.onDeviceOrientationChange, options);
     }
 
@@ -285,7 +302,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   removeEventListeners = () => {
-    const options = { passive: true };
+    const options = {
+      passive: true
+    };
 
     if (this.uniforms.iMouse.isNeeded) {
       this.canvas.removeEventListener('mousemove', this.mouseMove, options);
@@ -295,18 +314,22 @@ export default class ShadertoyReact extends Component<Props, *> {
 
       this.canvas.removeEventListener('touchmove', this.mouseMove, options);
       this.canvas.removeEventListener('touchend', this.mouseUp, options);
-      this.canvas.removeEventListener('touchstart', this.mouseDown, options);  
+      this.canvas.removeEventListener('touchstart', this.mouseDown, options);
     }
 
-    if(this.uniforms.iDeviceOrientation.isNeeded) {
+    if (this.uniforms.iDeviceOrientation.isNeeded) {
       window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, options);
     }
 
     window.removeEventListener('resize', this.onResize, options);
   };
 
-  onDeviceOrientationChange = ({alpha, beta, gamma}) => {
-    this.uniforms.iDeviceOrientation.value = [alpha, beta, gamma, window.orientation || 0 ];
+  onDeviceOrientationChange = ({
+    alpha,
+    beta,
+    gamma
+  }) => {
+    this.uniforms.iDeviceOrientation.value = [alpha, beta, gamma, window.orientation || 0];
   }
 
   mouseDown = e => {
@@ -325,20 +348,22 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   mouseMove = e => {
-    const { lerp = 1 } = this.props;
+    const {
+      lerp = 1
+    } = this.props;
 
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
-    
+
     let mouseX = clientX - this.canvasPosition.left;
     let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
 
-    if(lerp !== 1){
+    if (lerp !== 1) {
       this.lastMouseArr[0] = mouseX;
       this.lastMouseArr[1] = mouseY;
     } else {
       this.uniforms.iMouse.value[0] = mouseX;
-      this.uniforms.iMouse.value[1] = mouseY;  
+      this.uniforms.iMouse.value[1] = mouseY;
     }
   }
 
@@ -348,8 +373,12 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   onResize = () => {
-    const { gl } = this;
-    const { devicePixelRatio = 1 } = this.props;
+    const {
+      gl
+    } = this;
+    const {
+      devicePixelRatio = 1
+    } = this.props;
 
     this.canvasPosition = this.canvas.getBoundingClientRect();
 
@@ -358,7 +387,7 @@ export default class ShadertoyReact extends Component<Props, *> {
     const displayWidth = Math.floor(
       this.canvasPosition.width * realToCSSPixels
     );
-    
+
     const displayHeight = Math.floor(
       this.canvasPosition.height * realToCSSPixels
     );
@@ -380,16 +409,20 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   drawScene = (timestamp: number) => {
-    const { gl } = this;
-    const { lerp = 1 } = this.props;
-    
+    const {
+      gl
+    } = this;
+    const {
+      lerp = 1
+    } = this.props;
+
     gl.viewport(
       0,
       0,
       gl.drawingBufferWidth,
       gl.drawingBufferHeight
     );
-    
+
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // eslint-disable-line no-bitwise
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticesBuffer);
@@ -415,7 +448,9 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   createShader = (type: number, shaderCodeAsText: string) => {
-    const { gl } = this;
+    const {
+      gl
+    } = this;
 
     const shader = gl.createShader(type);
 
@@ -424,7 +459,7 @@ export default class ShadertoyReact extends Component<Props, *> {
 
     /* eslint-disable no-console */
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.warn(SRLOG`Error compiling the shader:`, shaderCodeAsText);
+      console.warn(SRLOG `Error compiling the shader:`, shaderCodeAsText);
       const compilationLog = gl.getShaderInfoLog(shader);
       gl.deleteShader(shader);
       console.error(SRLOG(`Shader compiler log: ${compilationLog}`));
@@ -434,8 +469,13 @@ export default class ShadertoyReact extends Component<Props, *> {
     return shader;
   };
 
-  initShaders = ({ fs, vs }: Shaders) => {
-    const { gl } = this;
+  initShaders = ({
+    fs,
+    vs
+  }: Shaders) => {
+    const {
+      gl
+    } = this;
     // console.log(fs, vs);
     const fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fs);
     const vertexShader = this.createShader(gl.VERTEX_SHADER, vs);
@@ -467,22 +507,27 @@ export default class ShadertoyReact extends Component<Props, *> {
   };
 
   processCustomUniforms = () => {
-    const { uniforms } = this.props;
-    if(uniforms) {
-      Object.keys(uniforms).forEach( (name: string, id: number) => {
+    const {
+      uniforms
+    } = this.props;
+    if (uniforms) {
+      Object.keys(uniforms).forEach((name: string, id: number) => {
 
-        const { value, type } = this.props.uniforms[name];
+        const {
+          value,
+          type
+        } = this.props.uniforms[name];
 
         const glslType = uniformTypeToGLSLType(type);
-        if(!glslType) return; // If the type specified doesn't exist
+        if (!glslType) return; // If the type specified doesn't exist
 
         let tempObject = {};
-        if(type.includes('Matrix')){
+        if (type.includes('Matrix')) {
           const arrayLength = type.length;
           const val = type.charAt(arrayLength - 3);
           const numberOfMatrices = Math.floor(value.length / (val * val));
 
-          if(value.length > (val * val)) {
+          if (value.length > (val * val)) {
             tempObject.arraySize = `[${numberOfMatrices}]`;
           }
         } else if (type.includes('v') && value.length > type.charAt(0)) {
@@ -490,18 +535,23 @@ export default class ShadertoyReact extends Component<Props, *> {
         }
 
         this.uniforms[name] = {
-            type: glslType,
-            isNeeded: false,
-            value,
-            ...tempObject,
+          type: glslType,
+          isNeeded: false,
+          value,
+          ...tempObject,
         }
       });
     }
   }
 
   processTextures = () => {
-    const { gl } = this;
-    const { textures, onDoneLoadingTextures } = this.props;
+    const {
+      gl
+    } = this;
+    const {
+      textures,
+      onDoneLoadingTextures
+    } = this.props;
 
     if (textures && textures.length > 0) {
 
@@ -521,14 +571,14 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.setupChannelRes(texture, id); // initialize array with 0s
         this.texturesArr[id] = new Texture(gl);
         return this.texturesArr[id]
-                .load(texture, id)
-                .then(texture => this.setupChannelRes(texture, id));
+          .load(texture, id)
+          .then(texture => this.setupChannelRes(texture, id));
       });
 
       Promise.all(texturePromisesArr)
-        .then(() => onDoneLoadingTextures && onDoneLoadingTextures() )
-        .catch(() => {
-          console.error(SRLOG`Problem encountered while loading textures`);
+        .then(() => onDoneLoadingTextures && onDoneLoadingTextures())
+        .catch(e => {
+          console.error(e);
           if (onDoneLoadingTextures) onDoneLoadingTextures();
         });
     } else {
@@ -537,34 +587,46 @@ export default class ShadertoyReact extends Component<Props, *> {
   }
 
   preProcessShaders = (fs: string, vs: string) => {
+    const {
+      precision
+    } = this.props;
 
-    const isShadertoy = /mainImage/.test(fs);
-    
-    let fsString = this.precision
-                    .concat(fs)
-                    .replace(/texture\(/g, 'texture2D(');
+    const isValidPrecision = PRECISIONS.includes(precision);
+    const precisionString = `precision ${isValidPrecision ? precision : PRECISIONS[1]} float;\n`;
+    if (!isValidPrecision) console.warn(SRLOG `wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to highp.`);
 
-    const indexOfPrecisionString = fsString.lastIndexOf(this.precision);
+    let fsString = precisionString
+      .concat(fs)
+      .replace(/texture\(/g, 'texture2D(');
+
+    const indexOfPrecisionString = fsString.lastIndexOf(precisionString);
+
     Object.keys(this.uniforms).forEach((uniform: string) => {
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
           `uniform ${this.uniforms[uniform].type} ${uniform}${this.uniforms[uniform].arraySize || ''}; \n`,
-          indexOfPrecisionString + this.precision.length
+          indexOfPrecisionString + precisionString.length
         );
         this.uniforms[uniform].isNeeded = true;
       }
     });
 
-    if(isShadertoy) fsString = fsString.concat(FS_MAIN_SHADER);
+    const isShadertoy = /mainImage/.test(fs);
+    if (isShadertoy) fsString = fsString.concat(FS_MAIN_SHADER);
 
     // console.log(fsString);
-    return { fs: fsString, vs };
+    return {
+      fs: fsString,
+      vs
+    };
   };
 
   setUniforms = (timestamp: number) => {
-    const { gl } = this;
-    
+    const {
+      gl
+    } = this;
+
     let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
     this.lastTime = timestamp;
 
@@ -572,11 +634,11 @@ export default class ShadertoyReact extends Component<Props, *> {
       Object.keys(this.props.uniforms).forEach(
         name => {
           const currentUniform = this.props.uniforms[name];
-          if(this.uniforms[name].isNeeded){
+          if (this.uniforms[name].isNeeded) {
             const customUniformLocation = gl.getUniformLocation(
-              this.shaderProgram, 
+              this.shaderProgram,
               name
-            );  
+            );
             processUniform(gl, customUniformLocation, currentUniform.type, currentUniform.value);
           }
         }
@@ -591,8 +653,8 @@ export default class ShadertoyReact extends Component<Props, *> {
       // $FlowFixMe
       gl.uniform4fv(mouseUniform, this.uniforms.iMouse.value);
     }
-    
-    if(this.uniforms.iChannelResolution && this.uniforms.iChannelResolution.isNeeded){
+
+    if (this.uniforms.iChannelResolution && this.uniforms.iChannelResolution.isNeeded) {
       const channelResUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_CHANNELRESOLUTION
@@ -600,7 +662,7 @@ export default class ShadertoyReact extends Component<Props, *> {
       gl.uniform3fv(channelResUniform, this.uniforms.iChannelResolution.value);
     }
 
-    if(this.uniforms.iDeviceOrientation.isNeeded){
+    if (this.uniforms.iDeviceOrientation.isNeeded) {
       const deviceOrientationUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_DEVICEORIENTATION
@@ -613,7 +675,7 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.shaderProgram,
         UNIFORM_TIME
       );
-      gl.uniform1f(timeUniform, this.timer += delta );
+      gl.uniform1f(timeUniform, this.timer += delta);
     }
 
     if (this.uniforms.iTimeDelta.isNeeded) {
@@ -621,14 +683,14 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.shaderProgram,
         UNIFORM_TIMEDELTA
       );
-      gl.uniform1f(timeUniform, delta );
+      gl.uniform1f(timeUniform, delta);
     }
 
     if (this.uniforms.iDate.isNeeded) {
 
       const d = new Date();
       const month = d.getMonth() + 1;
-      const day = d.getDate() ;
+      const day = d.getDate();
       const year = d.getFullYear();
       const time = d.getHours() * 60 * 60 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() * 0.001;
 
@@ -645,13 +707,19 @@ export default class ShadertoyReact extends Component<Props, *> {
         this.shaderProgram,
         UNIFORM_FRAME
       );
-      gl.uniform1f(timeUniform, this.uniforms.iFrame.value++ );
+      gl.uniform1f(timeUniform, this.uniforms.iFrame.value++);
     }
 
     if (this.texturesArr.length > 0) {
       this.texturesArr.forEach((texture: Texture, id: number) => {
-        const {isVideo, _webglTexture, source, flipY, isLoaded} = texture;
-        if(!isLoaded) return;
+        const {
+          isVideo,
+          _webglTexture,
+          source,
+          flipY,
+          isLoaded
+        } = texture;
+        if (!isLoaded) return;
         if (this.uniforms[`iChannel${id}`].isNeeded) {
           const iChannel = gl.getUniformLocation(
             this.shaderProgram,
@@ -659,8 +727,8 @@ export default class ShadertoyReact extends Component<Props, *> {
           );
           gl.activeTexture(gl[`TEXTURE${id}`]);
           gl.bindTexture(gl.TEXTURE_2D, _webglTexture);
-          gl.uniform1i(iChannel, id); 
-          if(isVideo) texture.updateTexture(_webglTexture, source, flipY);          
+          gl.uniform1i(iChannel, id);
+          if (isVideo) texture.updateTexture(_webglTexture, source, flipY);
         }
       });
     }
@@ -680,23 +748,31 @@ export default class ShadertoyReact extends Component<Props, *> {
   mousedown: boolean = false;
   canvasPosition: ClientRect;
   timer: number = 0;
-  lastMouseArr: Array<number> = [0, 0];
-  texturesArr: Array<WebGLTexture> = [];
+  lastMouseArr: Array < number > = [0, 0];
+  texturesArr: Array < WebGLTexture > = [];
   lastTime: number = 0;
 
   render = () => {
-    const { style } = this.props;
+    const {
+      style
+    } = this.props;
 
     const currentStyle = {
-        glCanvas: {
-          height: '100%',
-          width: '100%',
-          ...style,
-        }
+      glCanvas: {
+        height: '100%',
+        width: '100%',
+        ...style,
+      }
     };
 
-    return (
-      <canvas style={currentStyle.glCanvas} ref={this.registerCanvas} />
+    return ( <
+      canvas style = {
+        currentStyle.glCanvas
+      }
+      ref = {
+        this.registerCanvas
+      }
+      />
     );
   };
 }
