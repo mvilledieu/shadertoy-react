@@ -153,7 +153,7 @@ Example of shader you could write using these custom uniforms:
 	    gl_FragColor = vec4(uScrollY, uTestMatrix[0][0], uTestArrayFloats[0], uTestArrayVecs2[0].xy); 
     }
 ```
-  
+
 #### Working with textures: 
 
 By default `shadertoy-react` lets you pass an array of texture object, `shadertoy-react` takes care of loading the textures for you. A callback is available and called once all the textures are done loading. Each texture gets a uniform name `iChannel(n)` following the same order that in the prop passed to the react component, you can then directly use `iChanel(n)` in your shader.
@@ -185,7 +185,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 ```
 
 ##### Texture Filtering: 
-  By default all of your textures are being sqared if they aren't, and the default Texture Filtering and Wrapping are being applied to them, using `shadertoy-react` you can still apply your owns. `shadertoy-react` contains all the WebGL texture filtering constants and texture wrapping constants. So you can easily import them in your code and make sure to pass the right one to your texture options. 
+  By default all of your textures are being squared if they aren't, then the default Texture Filtering and Wrapping are being applied to them, using `shadertoy-react` you can  apply your own filters. `shadertoy-react` contains all the WebGL texture filtering constants and texture wrapping constants. So you can easily import them in your code and make sure to pass the right one to your texture options.
 
 **Example of optionnal texture related imports:**
 ```javascript
@@ -221,6 +221,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 ```
 ## What's next ordered by priority
 
+* Dynamically load new texture when textures props changes.
+* Add lazy loading logic with 1x 2x 3x etc. so your shader can receive <img /> like src files.
 * Add support for #define constantes in shader from prop.
 * Add camera feed as a texture.
 * Add support for Data texture.

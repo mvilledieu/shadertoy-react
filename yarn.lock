@@ -1914,6 +1914,14 @@ figgy-pudding@^3.1.0, figgy-pudding@^3.5.1:
   resolved "https://nexus.magicleap.blue/repository/npm-group/figgy-pudding/-/figgy-pudding-3.5.1.tgz#862470112901c727a0e495a80744bd5baa1d6790"
   integrity sha512-vNKxJHTEKNThjfrdJwHc7brvM6eVevuO5nTj6ez8ZQ1qbXTvGthucRF7S4vf2cr71QVnT70V34v0S1DyQsti0w==
 
+file-loader@^2.0.0:
+  version "2.0.0"
+  resolved "https://nexus.magicleap.blue/repository/npm-group/file-loader/-/file-loader-2.0.0.tgz#39749c82f020b9e85901dcff98e8004e6401cfde"
+  integrity sha512-YCsBfd1ZGCyonOKLxPiKPdu+8ld9HAaMEvJewzz+b2eTF7uL5Zm/HdBF6FjCrpCMRq25Mi0U1gl4pwn2TlH7hQ==
+  dependencies:
+    loader-utils "^1.0.2"
+    schema-utils "^1.0.0"
+
 filename-reserved-regex@^1.0.0:
   version "1.0.0"
   resolved "https://nexus.magicleap.blue/repository/npm-group/filename-reserved-regex/-/filename-reserved-regex-1.0.0.tgz#e61cf805f0de1c984567d0386dc5df50ee5af7e4"
@@ -4213,7 +4221,7 @@ uglify-es@^3.3.4:
     commander "~2.13.0"
     source-map "~0.6.1"
 
-uglify-js@3.4.x, uglify-js@^3.0.0, uglify-js@^3.4.9:
+uglify-js@3.4.x, uglify-js@^3.0.0:
   version "3.4.9"
   resolved "https://nexus.magicleap.blue/repository/npm-group/uglify-js/-/uglify-js-3.4.9.tgz#af02f180c1207d76432e473ed24a28f4a782bae3"
   dependencies:
