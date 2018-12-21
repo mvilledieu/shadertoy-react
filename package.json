@@ -1,6 +1,6 @@
 {
   "name": "shadertoy-react",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "React component that let's you easily render a shader on a canvas by simply passing a fragment shader, following the shadertoy syntax, and logic, so you don't have to worry about passing basic uniforms, or setting up the webgl scene to do that, all the work is being done for you.",
   "main": "lib/shadertoy-react.min.js",
   "homepage": "https://mvilledieu.github.io/shadertoy-react/",
@@ -32,6 +32,7 @@
     "@babel/preset-flow": "^7.0.0",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.0",
+    "file-loader": "^3.0.1",
     "gh-pages": "^2.0.1",
     "html-webpack-plugin": "^3.2.0",
     "react": " ^16.6.1",
@@ -40,8 +41,7 @@
     "uglifyjs-webpack-plugin": "^2.0.1",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.1.10",
-    "file-loader": "^2.0.0"
+    "webpack-dev-server": "^3.1.10"
   },
   "peerDependencies": {
     "react": "^16.6.1",
