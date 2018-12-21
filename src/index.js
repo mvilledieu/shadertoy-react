@@ -683,7 +683,7 @@ export default class ShadertoyReact extends Component < Props, * > {
         this.shaderProgram,
         UNIFORM_TIMEDELTA
       );
-      gl.uniform1f(timeUniform, delta);
+      gl.uniform1f(timeDeltaUniform, delta);
     }
 
     if (this.uniforms.iDate.isNeeded) {
@@ -707,7 +707,7 @@ export default class ShadertoyReact extends Component < Props, * > {
         this.shaderProgram,
         UNIFORM_FRAME
       );
-      gl.uniform1f(timeUniform, this.uniforms.iFrame.value++);
+      gl.uniform1i(timeDeltaUniform, this.uniforms.iFrame.value++);
     }
 
     if (this.texturesArr.length > 0) {
