@@ -71,7 +71,7 @@ Here are a few built in react props you can pass to your component. Feel free to
 * `clearColor` -- An array `[red, green, blue, alpha]` Specifies the color values used when clearing color buffers method of the [WebGL API](https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/clearColor) by default `[0, 0, 0, 1]`.
 * `precision` -- GLSL Precision qualifier, by default highp, it can be lowp, mediump, highp depending on how much precision the GPU uses when calculating floats.
 * `devicePixelRatio` -- A value passed to set the [pixel density](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) of the canvas. By default 1.
-* `contextOptions` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
+* `contextAttributes` -- To customize your [WebGL context attributes.](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext)
 * `style` -- Pass a [React Inline style](https://reactjs.org/docs/dom-elements.html#style) to customize the style of your canvas.
 * `onDoneLoadingTextures` -- Callback called once all textures are done being loaded, usefull when you want to wait for your shader to have all the needed texture before seeing it on screen. Using that callback you could for example simply fade the canvas in using css.
 * `lerp` -- A value in between 0 - 1 used to lerp the mouse position in your fragment shader.
@@ -233,6 +233,7 @@ const ExampleApp = () =>
 
 ## What's next ordered by priority
 
+* Module Support for props IntelliSense.
 * Dynamically load new texture when textures props changes.
 * Add lazy loading logic with 1x 2x 3x etc. so your shader can receive ```<img />``` like src files.
 * Add support for #define constantes in shader from prop.
