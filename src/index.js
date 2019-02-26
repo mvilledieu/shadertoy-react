@@ -336,11 +336,8 @@ export default class ShadertoyReact extends Component < Props, * > {
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
-    // let mouseX = clientX - this.canvasPosition.left;
-    // let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
-
-    let mouseX = clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-    let mouseY = clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    let mouseX = clientX - this.canvasPosition.left - window.pageXOffset;
+    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top - window.pageYOffset;
 
     this.mousedown = true;
     this.uniforms.iMouse.value[2] = mouseX;
@@ -351,6 +348,7 @@ export default class ShadertoyReact extends Component < Props, * > {
   }
 
   mouseMove = e => {
+
     const {
       lerp = 1
     } = this.props;
@@ -358,8 +356,8 @@ export default class ShadertoyReact extends Component < Props, * > {
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
-    let mouseX = clientX - this.canvasPosition.left;
-    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
+    let mouseX = clientX - this.canvasPosition.left - window.pageXOffset;
+    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top - window.pageYOffset;
 
     if (lerp !== 1) {
       this.lastMouseArr[0] = mouseX;
