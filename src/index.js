@@ -589,14 +589,17 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
 
   preProcessShaders = (fs: string, vs: string) => {
     const {
-      precision
+      precision,
+      devicePixelRatio = 1
     } = this.props;
 
+    const dprString = `#define DPR ${devicePixelRatio.toFixed(1)}\n`;
     const isValidPrecision = PRECISIONS.includes(precision);
     const precisionString = `precision ${isValidPrecision ? precision : PRECISIONS[1]} float;\n`;
     if (!isValidPrecision) console.warn(SRLOG `wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to highp.`);
 
     let fsString = precisionString
+      .concat(dprString)
       .concat(fs)
       .replace(/texture\(/g, 'texture2D(');
 
