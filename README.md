@@ -91,7 +91,7 @@ Built in uniforms are uniforms that are being passed automatically to your shade
 * `uniform sampler2D iChannel^n` -- The textures input channel you've passed; numbered in the same order as the textures passed as prop in your react component.
 * `uniform vec3 iChannelResolution[n]` -- An array containing the texture channel resolution (in pixels).
 * `#define DPR 1.0` -- The canvas device pixel ratio (1.0 by default or props.devicePixelRatio).
-* 
+  
 ##### shadertoy-react's only built-in:
 
 * `uniform vec4 iDeviceOrientation` -- Raw data from [device orientation](https://developer.mozilla.org/en-US/docs/Web/API/Detecting_device_orientation) where respectively x: Alpha, y: Beta, z: Gamma and w: [window.orientation](https://developer.mozilla.org/en-US/docs/Web/API/Window/orientation).
