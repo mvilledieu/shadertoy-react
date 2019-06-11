@@ -12,7 +12,7 @@
     "build": "webpack --mode production --config webpack.common.js",
     "deploy": "gh-pages -d examples/dist",
     "publish-demo": "npm run build && npm run deploy",
-    "publish-npm": "npm run prepublishOnly && npm publish --registry https://registry.npmjs.org"
+    "publish-npm": "npm run prepublishOnly && npm version patch && npm publish --registry https://registry.npmjs.org"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
