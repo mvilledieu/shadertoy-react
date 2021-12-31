@@ -3,8 +3,8 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
     entry: {
-        "shadertoy-react" : path.join(__dirname, "src/index.js"),
-        "shadertoy-react.min" : path.join(__dirname, "src/index.js"),
+        "shadertoy-react" : path.join(__dirname, "src/index.jsx"),
+        "shadertoy-react.min" : path.join(__dirname, "src/index.jsx"),
     },
     output: {
         path: path.join(__dirname, "lib/"),
@@ -28,7 +28,6 @@ module.exports = {
         'react-dom': 'react-dom'
     },
     optimization: {
-        minimize: true,
         minimizer: [new UglifyJsPlugin({
             include: /\.min\.js$/
         })]

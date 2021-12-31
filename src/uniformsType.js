@@ -8,26 +8,26 @@ const FLOAT = 'float';
 
 type Uniforms = {
   '1i': number,
-  '2i': Array < number > ,
-  '3i': Array < number > ,
-  '4i': Array < number > ,
+  '2i': Array<number>,
+  '3i': Array<number>,
+  '4i': Array<number>,
   '1f': number,
-  '2f': Array < number > ,
-  '3f': Array < number > ,
-  '4f': Array < number > ,
-  '1iv': Array < number > ,
-  '2iv': Array < number > ,
-  '3iv': Array < number > ,
-  '4iv': Array < number > ,
-  '1fv': Array < number > ,
-  '2fv': Array < number > ,
-  '3fv': Array < number > ,
-  '4fv': Array < number > ,
-  'Matrix3fv': Array < number > ,
-  'Matrix4fv': Array < number > ,
+  '2f': Array<number>,
+  '3f': Array<number>,
+  '4f': Array<number>,
+  '1iv': Array<number>,
+  '2iv': Array<number>,
+  '3iv': Array<number>,
+  '4iv': Array<number>,
+  '1fv': Array<number>,
+  '2fv': Array<number>,
+  '3fv': Array<number>,
+  '4fv': Array<number>,
+  'Matrix3fv': Array<number>,
+  'Matrix4fv': Array<number>,
 };
 
-export const processUniform = (gl: WebGLContext, location, type: Uniforms, value: number | string | Array < number > ) => {
+export const processUniform = (gl: WebGLContext, location, type: Uniforms, value: number | string | Array<number> ) => {
   switch (type) {
     case '1f':
       gl.uniform1f(location, value);
@@ -95,61 +95,43 @@ export const uniformTypeToGLSLType = (type: string) => {
   switch (type) {
     case '1f':
       return FLOAT;
-      break;
     case '2f':
       return 'vec2';
-      break;
     case '3f':
       return 'vec3';
-      break;
     case '4f':
       return 'vec4';
-      break;
     case '1i':
       return INT;
-      break;
     case '2i':
       return 'ivec2';
-      break;
     case '3i':
       return 'ivec3';
-      break;
     case '4i':
       return 'ivec4';
-      break;
     case '1iv':
       return INT;
-      break;
     case '2iv':
       return 'ivec2';
-      break;
     case '3iv':
       return 'ivec3';
-      break;
     case '4iv':
       return 'ivec4';
-      break;
     case '1fv':
       return 'float';
-      break;
     case '2fv':
       return 'vec2';
-      break;
     case '3fv':
       return 'vec3';
-      break;
     case '4fv':
       return 'vec4';
-      break;
     case 'Matrix2fv':
       return 'mat2';
       break;
     case 'Matrix3fv':
       return 'mat3';
-      break;
     case 'Matrix4fv':
       return 'mat4';
-      break;
     default:
       console.error(SRLOG `The uniform type "${type}" is not valid, please make sure your uniform type is valid`);
   }

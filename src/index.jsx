@@ -1,7 +1,5 @@
 // @flow
-import React, {
-  Component
-} from 'react';
+import React, { Component } from "react";
 import Texture, {
   NearestFilter,
   LinearFilter,
@@ -12,16 +10,11 @@ import Texture, {
   ClampToEdgeWrapping,
   MirroredRepeatWrapping,
   RepeatWrapping,
-} from './Texture';
+} from "./Texture";
 
-import {
-  SRLOG
-} from './prefixLogs';
+import { SRLOG } from "./prefixLogs";
 
-import {
-  uniformTypeToGLSLType,
-  processUniform
-} from './uniformsType';
+import { uniformTypeToGLSLType, processUniform } from "./uniformsType";
 
 export {
   NearestFilter,
@@ -35,69 +28,68 @@ export {
   RepeatWrapping,
 };
 
-const PRECISIONS = ['lowp', 'mediump', 'highp'];
+const PRECISIONS = ["lowp", "mediump", "highp"];
 
-const FS_MAIN_SHADER =
-  `\nvoid main(void){
+const FS_MAIN_SHADER = `\nvoid main(void){
     vec4 color = vec4(0.0,0.0,0.0,1.0);
     mainImage( color, gl_FragCoord.xy );
     gl_FragColor = color;
 }`;
 
-const BASIC_FS = // Basic shadertoy shader
+const BASIC_FS =
+  // Basic shadertoy shader
   `void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 uv = fragCoord/iResolution.xy;
     vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
     fragColor = vec4(col,1.0);
 }`;
 
-const BASIC_VS =
-  `attribute vec3 aVertexPosition;
+const BASIC_VS = `attribute vec3 aVertexPosition;
 void main(void) {
     gl_Position = vec4(aVertexPosition, 1.0);
 }`;
 
 // Shadertoy built-in uniforms
-const UNIFORM_TIME = 'iTime';
-const UNIFORM_TIMEDELTA = 'iTimeDelta';
-const UNIFORM_DATE = 'iDate';
-const UNIFORM_FRAME = 'iFrame';
-const UNIFORM_MOUSE = 'iMouse';
-const UNIFORM_RESOLUTION = 'iResolution';
-const UNIFORM_CHANNEL = 'iChannel';
-const UNIFORM_CHANNELRESOLUTION = 'iChannelResolution';
+const UNIFORM_TIME = "iTime";
+const UNIFORM_TIMEDELTA = "iTimeDelta";
+const UNIFORM_DATE = "iDate";
+const UNIFORM_FRAME = "iFrame";
+const UNIFORM_MOUSE = "iMouse";
+const UNIFORM_RESOLUTION = "iResolution";
+const UNIFORM_CHANNEL = "iChannel";
+const UNIFORM_CHANNELRESOLUTION = "iChannelResolution";
 
 // Uniforms not built-int in shadertoy
-const UNIFORM_DEVICEORIENTATION = 'iDeviceOrientation';
+const UNIFORM_DEVICEORIENTATION = "iDeviceOrientation";
 
 /* eslint-disable */
 type TexturePropsType = {
   url: string,
-  wrapS ? : number,
-  wrapT ? : number,
-  minFilter ? : number,
-  magFilter ? : number,
-  flipY ? : number,
+  wrapS?: number,
+  wrapT?: number,
+  minFilter?: number,
+  magFilter?: number,
+  flipY?: number,
 };
 /* eslint-emable */
 
 type Uniform = {
   type: string,
-  value: number | Array < number > ,
+  value: number | Array<number>,
 };
 
 type Props = {
   fs: string,
-  vs ? : string,
-  textures ? : Array < TexturePropsType > ,
-  uniforms ? : Array < Uniform > ,
-  clearColor ? : Array < number > ,
-  precision ? : string,
-  style ? : string,
-  contextAttributes ? : Object,
-  onDoneLoadingTextures ? : Function,
-  lerp ? : number,
-  devicePixelRatio ? : number,
+  vs?: string,
+  textures?: Array<TexturePropsType>,
+  uniforms?: Array<Uniform>,
+  clearColor?: Array<number>,
+  precision?: string,
+  style?: string,
+  contextAttributes?: Object,
+  onDoneLoadingTextures?: Function,
+  lerp?: number,
+  devicePixelRatio?: number,
 };
 
 type Shaders = {
@@ -107,54 +99,53 @@ type Shaders = {
 
 const lerpVal = (v0: number, v1: number, t: number) => v0 * (1 - t) + v1 * t;
 const insertStringAtIndex = (
-    currentString: string,
-    string: string,
-    index: number
-  ) =>
-  index > 0 ?
-  currentString.substring(0, index) +
-  string +
-  currentString.substring(index, currentString.length) :
-  string + currentString;
+  currentString: string,
+  string: string,
+  index: number
+) =>
+  index > 0
+    ? currentString.substring(0, index) +
+      string +
+      currentString.substring(index, currentString.length)
+    : string + currentString;
 
-export default class ShadertoyReact extends Component < Props, * > {
-
+export default class ShadertoyReact extends Component<Props, *> {
   constructor(props) {
     super(props);
 
     this.uniforms = {
       [UNIFORM_TIME]: {
-        type: 'float',
+        type: "float",
         isNeeded: false,
         value: 0,
       },
       [UNIFORM_TIMEDELTA]: {
-        type: 'float',
+        type: "float",
         isNeeded: false,
         value: 0,
       },
       [UNIFORM_DATE]: {
-        type: 'vec4',
+        type: "vec4",
         isNeeded: false,
         value: [0, 0, 0, 0],
       },
       [UNIFORM_MOUSE]: {
-        type: 'vec4',
+        type: "vec4",
         isNeeded: false,
         value: [0, 0, 0, 0],
       },
       [UNIFORM_RESOLUTION]: {
-        type: 'vec2',
+        type: "vec2",
         isNeeded: false,
         value: [0, 0],
       },
       [UNIFORM_FRAME]: {
-        type: 'int',
+        type: "int",
         isNeeded: false,
         value: 0,
       },
       [UNIFORM_DEVICEORIENTATION]: {
-        type: 'vec4',
+        type: "vec4",
         isNeeded: false,
         value: [0, 0, 0, 0],
       },
@@ -166,20 +157,14 @@ export default class ShadertoyReact extends Component < Props, * > {
     contextAttributes: {},
     devicePixelRatio: 1,
     vs: BASIC_VS,
-    precision: 'highp',
+    precision: "highp",
   };
 
   componentDidMount = () => {
     this.initWebGL();
 
-    const {
-      fs,
-      vs,
-      clearColor = [0, 0, 0, 1]
-    } = this.props;
-    const {
-      gl
-    } = this;
+    const { fs, vs, clearColor = [0, 0, 0, 1] } = this.props;
+    const { gl } = this;
 
     if (gl) {
       gl.clearColor(...clearColor);
@@ -205,12 +190,10 @@ export default class ShadertoyReact extends Component < Props, * > {
   shouldComponentUpdate = () => false;
 
   componentWillUnmount() {
-    const {
-      gl
-    } = this;
+    const { gl } = this;
 
     if (gl) {
-      gl.getExtension('WEBGL_lose_context').loseContext();
+      gl.getExtension("WEBGL_lose_context").loseContext();
 
       gl.useProgram(null);
       gl.deleteProgram(this.shaderProgram);
@@ -228,116 +211,114 @@ export default class ShadertoyReact extends Component < Props, * > {
     cancelAnimationFrame(this.animFrameId);
   }
 
-  setupChannelRes = ({
-    width,
-    height
-  }: Texture, id: number) => {
-    const {
-      devicePixelRatio = 1
-    } = this.props;
+  setupChannelRes = ({ width, height }: Texture, id: number) => {
+    const { devicePixelRatio = 1 } = this.props;
     this.uniforms.iChannelResolution.value[id * 3] = width * devicePixelRatio;
-    this.uniforms.iChannelResolution.value[id * 3 + 1] = height * devicePixelRatio;
+    this.uniforms.iChannelResolution.value[id * 3 + 1] =
+      height * devicePixelRatio;
     this.uniforms.iChannelResolution.value[id * 3 + 2] = 0;
     // console.log(this.uniforms);
-  }
+  };
 
   initWebGL = () => {
-    const {
-      contextAttributes
-    } = this.props;
+    const { contextAttributes } = this.props;
     // $FlowFixMe
     this.gl =
-      this.canvas.getContext('webgl', contextAttributes) ||
-      this.canvas.getContext('experimental-webgl', contextAttributes);
+      this.canvas.getContext("webgl", contextAttributes) ||
+      this.canvas.getContext("experimental-webgl", contextAttributes);
     // $FlowFixMe
-    this.gl.getExtension('OES_standard_derivatives');
+    this.gl.getExtension("OES_standard_derivatives");
     // $FlowFixMe
-    this.gl.getExtension('EXT_shader_texture_lod');
+    this.gl.getExtension("EXT_shader_texture_lod");
   };
 
   initBuffers = () => {
-    const {
-      gl
-    } = this;
+    const { gl } = this;
 
     this.squareVerticesBuffer = gl.createBuffer();
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.squareVerticesBuffer);
 
     const vertices = [
-      1.0, 1.0, 0.0,
-      -1.0, 1.0, 0.0,
-      1.0, -1.0, 0.0,
-      -1.0, -1.0, 0.0,
+      1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, -1.0, 0.0, -1.0, -1.0, 0.0,
     ];
 
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      new Float32Array(vertices),
-      gl.STATIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
   };
 
   addEventListeners = () => {
     const options = {
-      passive: true
+      passive: true,
     };
 
     if (this.uniforms.iMouse.isNeeded) {
-      this.canvas.addEventListener('mousemove', this.mouseMove, options);
-      this.canvas.addEventListener('mouseout', this.mouseUp, options);
-      this.canvas.addEventListener('mouseup', this.mouseUp, options);
-      this.canvas.addEventListener('mousedown', this.mouseDown, options);
+      this.canvas.addEventListener("mousemove", this.mouseMove, options);
+      this.canvas.addEventListener("mouseout", this.mouseUp, options);
+      this.canvas.addEventListener("mouseup", this.mouseUp, options);
+      this.canvas.addEventListener("mousedown", this.mouseDown, options);
 
-      this.canvas.addEventListener('touchmove', this.mouseMove, options);
-      this.canvas.addEventListener('touchend', this.mouseUp, options);
-      this.canvas.addEventListener('touchstart', this.mouseDown, options);
+      this.canvas.addEventListener("touchmove", this.mouseMove, options);
+      this.canvas.addEventListener("touchend", this.mouseUp, options);
+      this.canvas.addEventListener("touchstart", this.mouseDown, options);
     }
 
     if (this.uniforms.iDeviceOrientation.isNeeded) {
-      window.addEventListener("deviceorientation", this.onDeviceOrientationChange, options);
+      window.addEventListener(
+        "deviceorientation",
+        this.onDeviceOrientationChange,
+        options
+      );
     }
 
-    window.addEventListener('resize', this.onResize, options);
+    window.addEventListener("resize", this.onResize, options);
   };
 
   removeEventListeners = () => {
     const options = {
-      passive: true
+      passive: true,
     };
 
     if (this.uniforms.iMouse.isNeeded) {
-      this.canvas.removeEventListener('mousemove', this.mouseMove, options);
-      this.canvas.removeEventListener('mouseout', this.mouseUp, options);
-      this.canvas.removeEventListener('mouseup', this.mouseUp, options);
-      this.canvas.removeEventListener('mousedown', this.mouseDown, options);
+      this.canvas.removeEventListener("mousemove", this.mouseMove, options);
+      this.canvas.removeEventListener("mouseout", this.mouseUp, options);
+      this.canvas.removeEventListener("mouseup", this.mouseUp, options);
+      this.canvas.removeEventListener("mousedown", this.mouseDown, options);
 
-      this.canvas.removeEventListener('touchmove', this.mouseMove, options);
-      this.canvas.removeEventListener('touchend', this.mouseUp, options);
-      this.canvas.removeEventListener('touchstart', this.mouseDown, options);
+      this.canvas.removeEventListener("touchmove", this.mouseMove, options);
+      this.canvas.removeEventListener("touchend", this.mouseUp, options);
+      this.canvas.removeEventListener("touchstart", this.mouseDown, options);
     }
 
     if (this.uniforms.iDeviceOrientation.isNeeded) {
-      window.removeEventListener("deviceorientation", this.onDeviceOrientationChange, options);
+      window.removeEventListener(
+        "deviceorientation",
+        this.onDeviceOrientationChange,
+        options
+      );
     }
 
-    window.removeEventListener('resize', this.onResize, options);
+    window.removeEventListener("resize", this.onResize, options);
   };
 
-  onDeviceOrientationChange = ({
-    alpha,
-    beta,
-    gamma
-  }) => {
-    this.uniforms.iDeviceOrientation.value = [alpha, beta, gamma, window.orientation || 0];
-  }
+  onDeviceOrientationChange = ({ alpha, beta, gamma }) => {
+    this.uniforms.iDeviceOrientation.value = [
+      alpha,
+      beta,
+      gamma,
+      window.orientation || 0,
+    ];
+  };
 
-  mouseDown = e => {
+  mouseDown = (e) => {
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
     let mouseX = clientX - this.canvasPosition.left - window.pageXOffset;
-    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top - window.pageYOffset;
+    let mouseY =
+      this.canvasPosition.height -
+      clientY -
+      this.canvasPosition.top -
+      window.pageYOffset;
 
     this.mousedown = true;
     this.uniforms.iMouse.value[2] = mouseX;
@@ -345,19 +326,17 @@ export default class ShadertoyReact extends Component < Props, * > {
 
     this.lastMouseArr[0] = mouseX;
     this.lastMouseArr[1] = mouseY;
-  }
+  };
 
-  mouseMove = e => {
-this.canvasPosition = this.canvas.getBoundingClientRect();
-    const {
-      lerp = 1
-    } = this.props;
+  mouseMove = (e) => {
+    this.canvasPosition = this.canvas.getBoundingClientRect();
+    const { lerp = 1 } = this.props;
 
     const clientX = e.clientX || e.changedTouches[0].clientX;
     const clientY = e.clientY || e.changedTouches[0].clientY;
 
     let mouseX = clientX - this.canvasPosition.left;
-    let mouseY = (this.canvasPosition.height - clientY) - this.canvasPosition.top;
+    let mouseY = this.canvasPosition.height - clientY - this.canvasPosition.top;
 
     if (lerp !== 1) {
       this.lastMouseArr[0] = mouseX;
@@ -366,20 +345,16 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
       this.uniforms.iMouse.value[0] = mouseX;
       this.uniforms.iMouse.value[1] = mouseY;
     }
-  }
+  };
 
-  mouseUp = e => {
+  mouseUp = (e) => {
     this.uniforms.iMouse.value[2] = 0;
     this.uniforms.iMouse.value[3] = 0;
-  }
+  };
 
   onResize = () => {
-    const {
-      gl
-    } = this;
-    const {
-      devicePixelRatio = 1
-    } = this.props;
+    const { gl } = this;
+    const { devicePixelRatio = 1 } = this.props;
 
     this.canvasPosition = this.canvas.getBoundingClientRect();
 
@@ -402,27 +377,15 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
         UNIFORM_RESOLUTION
       );
       // $FlowFixMe
-      gl.uniform2fv(rUniform, [
-        gl.canvas.width,
-        gl.canvas.height,
-      ]);
+      gl.uniform2fv(rUniform, [gl.canvas.width, gl.canvas.height]);
     }
   };
 
   drawScene = (timestamp: number) => {
-    const {
-      gl
-    } = this;
-    const {
-      lerp = 1
-    } = this.props;
+    const { gl } = this;
+    const { lerp = 1 } = this.props;
 
-    gl.viewport(
-      0,
-      0,
-      gl.drawingBufferWidth,
-      gl.drawingBufferHeight
-    );
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); // eslint-disable-line no-bitwise
 
@@ -441,17 +404,23 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     if (this.uniforms.iMouse.isNeeded && lerp !== 1) {
-      this.uniforms.iMouse.value[0] = lerpVal(this.uniforms.iMouse.value[0], this.lastMouseArr[0], lerp);
-      this.uniforms.iMouse.value[1] = lerpVal(this.uniforms.iMouse.value[1], this.lastMouseArr[1], lerp);
+      this.uniforms.iMouse.value[0] = lerpVal(
+        this.uniforms.iMouse.value[0],
+        this.lastMouseArr[0],
+        lerp
+      );
+      this.uniforms.iMouse.value[1] = lerpVal(
+        this.uniforms.iMouse.value[1],
+        this.lastMouseArr[1],
+        lerp
+      );
     }
 
     this.animFrameId = requestAnimationFrame(this.drawScene);
   };
 
   createShader = (type: number, shaderCodeAsText: string) => {
-    const {
-      gl
-    } = this;
+    const { gl } = this;
 
     const shader = gl.createShader(type);
 
@@ -460,7 +429,7 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
 
     /* eslint-disable no-console */
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      console.warn(SRLOG `Error compiling the shader:`, shaderCodeAsText);
+      console.warn(SRLOG`Error compiling the shader:`, shaderCodeAsText);
       const compilationLog = gl.getShaderInfoLog(shader);
       gl.deleteShader(shader);
       console.error(SRLOG(`Shader compiler log: ${compilationLog}`));
@@ -470,13 +439,8 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
     return shader;
   };
 
-  initShaders = ({
-    fs,
-    vs
-  }: Shaders) => {
-    const {
-      gl
-    } = this;
+  initShaders = ({ fs, vs }: Shaders) => {
+    const { gl } = this;
     // console.log(fs, vs);
     const fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fs);
     const vertexShader = this.createShader(gl.VERTEX_SHADER, vs);
@@ -490,9 +454,11 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
     if (!gl.getProgramParameter(this.shaderProgram, gl.LINK_STATUS)) {
       // $FlowFixMe
       console.error(
-        SRLOG(`Unable to initialize the shader program: ${gl.getProgramInfoLog(
-          this.shaderProgram
-        )}`)
+        SRLOG(
+          `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+            this.shaderProgram
+          )}`
+        )
       );
       return;
     }
@@ -502,37 +468,33 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
 
     this.vertexPositionAttribute = gl.getAttribLocation(
       this.shaderProgram,
-      'aVertexPosition'
+      "aVertexPosition"
     );
     gl.enableVertexAttribArray(this.vertexPositionAttribute);
   };
 
   processCustomUniforms = () => {
-    const {
-      uniforms
-    } = this.props;
+    const { uniforms } = this.props;
     if (uniforms) {
       Object.keys(uniforms).forEach((name: string, id: number) => {
-
-        const {
-          value,
-          type
-        } = this.props.uniforms[name];
+        const { value, type } = this.props.uniforms[name];
 
         const glslType = uniformTypeToGLSLType(type);
         if (!glslType) return; // If the type specified doesn't exist
 
         let tempObject = {};
-        if (type.includes('Matrix')) {
+        if (type.includes("Matrix")) {
           const arrayLength = type.length;
           const val = type.charAt(arrayLength - 3);
           const numberOfMatrices = Math.floor(value.length / (val * val));
 
-          if (value.length > (val * val)) {
+          if (value.length > val * val) {
             tempObject.arraySize = `[${numberOfMatrices}]`;
           }
-        } else if (type.includes('v') && value.length > type.charAt(0)) {
-          tempObject.arraySize = `[${ Math.floor(value.length /  type.charAt(0))  }]`;
+        } else if (type.includes("v") && value.length > type.charAt(0)) {
+          tempObject.arraySize = `[${Math.floor(
+            value.length / type.charAt(0)
+          )}]`;
         }
 
         this.uniforms[name] = {
@@ -540,68 +502,66 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
           isNeeded: false,
           value,
           ...tempObject,
-        }
+        };
       });
     }
-  }
+  };
 
   processTextures = () => {
-    const {
-      gl
-    } = this;
-    const {
-      textures,
-      onDoneLoadingTextures
-    } = this.props;
+    const { gl } = this;
+    const { textures, onDoneLoadingTextures } = this.props;
 
     if (textures && textures.length > 0) {
-
       this.uniforms[`${UNIFORM_CHANNELRESOLUTION}`] = {
-        type: 'vec3',
+        type: "vec3",
         isNeeded: false,
         arraySize: `[${textures.length}]`,
         value: [],
       };
 
-      const texturePromisesArr = textures.map((texture: TexturePropsType, id: number) => {
-        this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
-          type: 'sampler2D',
-          isNeeded: false,
-        }; // Dynamically add textures uniforms
+      const texturePromisesArr = textures.map(
+        (texture: TexturePropsType, id: number) => {
+          this.uniforms[`${UNIFORM_CHANNEL}${id}`] = {
+            type: "sampler2D",
+            isNeeded: false,
+          }; // Dynamically add textures uniforms
 
-        this.setupChannelRes(texture, id); // initialize array with 0s
-        this.texturesArr[id] = new Texture(gl);
-        return this.texturesArr[id]
-          .load(texture, id)
-          .then(texture => this.setupChannelRes(texture, id));
-      });
+          this.setupChannelRes(texture, id); // initialize array with 0s
+          this.texturesArr[id] = new Texture(gl);
+          return this.texturesArr[id]
+            .load(texture, id)
+            .then((texture) => this.setupChannelRes(texture, id));
+        }
+      );
 
       Promise.all(texturePromisesArr)
         .then(() => onDoneLoadingTextures && onDoneLoadingTextures())
-        .catch(e => {
+        .catch((e) => {
           console.error(e);
           if (onDoneLoadingTextures) onDoneLoadingTextures();
         });
     } else {
       if (onDoneLoadingTextures) onDoneLoadingTextures();
     }
-  }
+  };
 
   preProcessShaders = (fs: string, vs: string) => {
-    const {
-      precision,
-      devicePixelRatio = 1
-    } = this.props;
+    const { precision, devicePixelRatio = 1 } = this.props;
 
     const dprString = `#define DPR ${devicePixelRatio.toFixed(1)}\n`;
     const isValidPrecision = PRECISIONS.includes(precision);
-    const precisionString = `precision ${isValidPrecision ? precision : PRECISIONS[1]} float;\n`;
-    if (!isValidPrecision) console.warn(SRLOG `wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to highp.`);
+    const precisionString = `precision ${
+      isValidPrecision ? precision : PRECISIONS[1]
+    } float;\n`;
+    if (!isValidPrecision)
+      console.warn(
+        SRLOG`wrong precision type ${precision}, please make sure to pass one of a valid precision lowp, mediump, highp, by default you shader precision will be set to highp.`
+      );
 
     let fsString = precisionString
       .concat(dprString)
       .concat(fs)
-      .replace(/texture\(/g, 'texture2D(');
+      .replace(/texture\(/g, "texture2D(");
 
     const indexOfPrecisionString = fsString.lastIndexOf(precisionString);
 
@@ -609,7 +569,9 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
       if (fs.includes(uniform)) {
         fsString = insertStringAtIndex(
           fsString,
-          `uniform ${this.uniforms[uniform].type} ${uniform}${this.uniforms[uniform].arraySize || ''}; \n`,
+          `uniform ${this.uniforms[uniform].type} ${uniform}${
+            this.uniforms[uniform].arraySize || ""
+          }; \n`,
           indexOfPrecisionString + precisionString.length
         );
         this.uniforms[uniform].isNeeded = true;
@@ -622,31 +584,32 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
     // console.log(fsString);
     return {
       fs: fsString,
-      vs
+      vs,
     };
   };
 
   setUniforms = (timestamp: number) => {
-    const {
-      gl
-    } = this;
+    const { gl } = this;
 
-    let delta = this.lastTime ? ((timestamp - this.lastTime) / 1000) : 0;
+    let delta = this.lastTime ? (timestamp - this.lastTime) / 1000 : 0;
     this.lastTime = timestamp;
 
     if (this.props.uniforms) {
-      Object.keys(this.props.uniforms).forEach(
-        name => {
-          const currentUniform = this.props.uniforms[name];
-          if (this.uniforms[name].isNeeded) {
-            const customUniformLocation = gl.getUniformLocation(
-              this.shaderProgram,
-              name
-            );
-            processUniform(gl, customUniformLocation, currentUniform.type, currentUniform.value);
-          }
+      Object.keys(this.props.uniforms).forEach((name) => {
+        const currentUniform = this.props.uniforms[name];
+        if (this.uniforms[name].isNeeded) {
+          const customUniformLocation = gl.getUniformLocation(
+            this.shaderProgram,
+            name
+          );
+          processUniform(
+            gl,
+            customUniformLocation,
+            currentUniform.type,
+            currentUniform.value
+          );
         }
-      );
+      });
     }
 
     if (this.uniforms.iMouse.isNeeded) {
@@ -658,7 +621,10 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
       gl.uniform4fv(mouseUniform, this.uniforms.iMouse.value);
     }
 
-    if (this.uniforms.iChannelResolution && this.uniforms.iChannelResolution.isNeeded) {
+    if (
+      this.uniforms.iChannelResolution &&
+      this.uniforms.iChannelResolution.isNeeded
+    ) {
       const channelResUniform = gl.getUniformLocation(
         this.shaderProgram,
         UNIFORM_CHANNELRESOLUTION
@@ -671,7 +637,10 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
         this.shaderProgram,
         UNIFORM_DEVICEORIENTATION
       );
-      gl.uniform4fv(deviceOrientationUniform, this.uniforms.iDeviceOrientation.value);
+      gl.uniform4fv(
+        deviceOrientationUniform,
+        this.uniforms.iDeviceOrientation.value
+      );
     }
 
     if (this.uniforms.iTime.isNeeded) {
@@ -679,7 +648,7 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
         this.shaderProgram,
         UNIFORM_TIME
       );
-      gl.uniform1f(timeUniform, this.timer += delta);
+      gl.uniform1f(timeUniform, (this.timer += delta));
     }
 
     if (this.uniforms.iTimeDelta.isNeeded) {
@@ -691,12 +660,15 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
     }
 
     if (this.uniforms.iDate.isNeeded) {
-
       const d = new Date();
       const month = d.getMonth() + 1;
       const day = d.getDate();
       const year = d.getFullYear();
-      const time = d.getHours() * 60 * 60 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() * 0.001;
+      const time =
+        d.getHours() * 60 * 60 +
+        d.getMinutes() * 60 +
+        d.getSeconds() +
+        d.getMilliseconds() * 0.001;
 
       const dateUniform = gl.getUniformLocation(
         this.shaderProgram,
@@ -716,13 +688,7 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
 
     if (this.texturesArr.length > 0) {
       this.texturesArr.forEach((texture: Texture, id: number) => {
-        const {
-          isVideo,
-          _webglTexture,
-          source,
-          flipY,
-          isLoaded
-        } = texture;
+        const { isVideo, _webglTexture, source, flipY, isLoaded } = texture;
         if (!isLoaded) return;
         if (this.uniforms[`iChannel${id}`].isNeeded) {
           const iChannel = gl.getUniformLocation(
@@ -752,31 +718,21 @@ this.canvasPosition = this.canvas.getBoundingClientRect();
   mousedown: boolean = false;
   canvasPosition: ClientRect;
   timer: number = 0;
-  lastMouseArr: Array < number > = [0, 0];
-  texturesArr: Array < WebGLTexture > = [];
+  lastMouseArr: Array<number> = [0, 0];
+  texturesArr: Array<WebGLTexture> = [];
   lastTime: number = 0;
 
   render = () => {
-    const {
-      style
-    } = this.props;
+    const { style } = this.props;
 
     const currentStyle = {
       glCanvas: {
-        height: '100%',
-        width: '100%',
+        height: "100%",
+        width: "100%",
         ...style,
-      }
+      },
     };
 
-    return ( <
-      canvas style = {
-        currentStyle.glCanvas
-      }
-      ref = {
-        this.registerCanvas
-      }
-      />
-    );
+    return <canvas style={currentStyle.glCanvas} ref={this.registerCanvas} />;
   };
 }
